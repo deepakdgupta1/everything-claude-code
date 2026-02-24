@@ -1,0 +1,418 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "amp-configuration-v1.0",
+  "title": "AMP (Sourcegraph) Configuration & Attribute Specification",
+  "version": "1.0-GA",
+  "lastUpdated": "2026-01-20",
+
+  "identity": {
+    "agentName": "AMP",
+    "vendor": "Amp Inc. (Spin-out from Sourcegraph)",
+    "releaseChannel": "General Availability",
+    "formFactor": "Hybrid (CLI + VS Code Extension + JetBrains Plugin + Neovim)",
+    "licenseModel": "Proprietary (Enterprise focus)",
+    "costArchitecture": {
+      "payAsYouGo": "No markup for individuals",
+      "freeTier": "Ad-supported (up to $10 daily credits)",
+      "enterprise": "Custom pricing with SOC 2 compliance"
+    },
+    "installation": {
+      "cli": "curl -fsSL https://ampcode.com/install.sh | bash",
+      "vscode": "VS Code Extension Marketplace",
+      "jetbrains": "JetBrains Plugin Marketplace"
+    }
+  },
+
+  "configurationFiles": {
+    "instructions": {
+      "file": "AGENTS.md",
+      "description": "Agent-readable documentation standard (vendor-neutral)",
+      "locations": {
+        "project": "./AGENTS.md",
+        "projectSubtree": "./<subdir>/AGENTS.md",
+        "globalAmp": "$HOME/.config/amp/AGENTS.md",
+        "globalConfig": "$HOME/.config/AGENTS.md"
+      },
+      "precedence": [
+        "Current working directory and parent directories up to $HOME",
+        "Subtree AGENTS.md files included when agent reads files in subtree",
+        "Both ~/.config/amp/AGENTS.md and ~/.config/AGENTS.md if they exist"
+      ],
+      "fallback": "AGENT.md (without S) or CLAUDE.md if AGENTS.md doesn't exist",
+      "features": {
+        "atMentions": "@-mention files for context (e.g., @docs/*.md)",
+        "globPatterns": "Supported for file references",
+        "relativePaths": "Interpreted relative to the agent file",
+        "absolutePaths": "Supported including @~/some/path"
+      },
+      "bestPractice": "Keep top-level general, create specific files in subtrees for subprojects"
+    },
+    "settings": {
+      "vscode": {
+        "location": "VS Code settings.json",
+        "prefix": "amp."
+      },
+      "cli": {
+        "location": "~/.config/amp/settings.json"
+      }
+    },
+    "skills": {
+      "location": {
+        "global": "~/.config/amp/skills/",
+        "project": ".agents/skills/"
+      },
+      "file": "SKILL.md",
+      "format": "Markdown with YAML frontmatter",
+      "fields": {
+        "name": "Unique skill identifier",
+        "description": "Description for when to invoke the skill"
+      }
+    }
+  },
+
+  "cognitiveArchitecture": {
+    "defaultModel": {
+      "value": "Gemini 3 Pro",
+      "note": "Switched from Claude Sonnet 4.5 in January 2026"
+    },
+    "supportedModels": {
+      "anthropic": ["Claude Sonnet 4.5", "Claude Opus 4.5"],
+      "openai": ["GPT-5.2 (Oracle reasoning tasks)"],
+      "google": ["Gemini 3 Pro"]
+    },
+    "modes": {
+      "smart": {
+        "description": "Unconstrained state-of-the-art model use for maximum capability and autonomy",
+        "default": true
+      },
+      "rush": {
+        "description": "Faster, cheaper, less capable, suitable for small well-defined tasks"
+      },
+      "large": {
+        "description": "Hidden mode for complex tasks",
+        "note": "Not publicly documented"
+      }
+    },
+    "oracle": {
+      "description": "Specialized sub-agent powered by GPT-5.2 for complex reasoning tasks",
+      "capabilities": ["Planning", "Code review", "Architecture feedback", "Debugging"]
+    },
+    "contextWindow": {
+      "default": "Dynamic - leverages Sourcegraph remote indexing",
+      "effective": "Infinite (for enterprise with remote indexing)"
+    },
+    "planningMode": "Implicit in Smart Mode; explicit via Oracle for complex reasoning"
+  },
+
+  "settings": {
+    "mcpServers": {
+      "key": "amp.mcpServers",
+      "type": "object",
+      "description": "MCP server configurations",
+      "example": {
+        "playwright": {
+          "command": "npx",
+          "args": ["-y", "@playwright/mcp@latest", "--headless", "--isolated"]
+        },
+        "semgrep": {
+          "url": "https://mcp.semgrep.ai/mcp"
+        },
+        "sourcegraph": {
+          "url": "${SRC_ENDPOINT}/.api/mcp/v1",
+          "headers": {
+            "Authorization": "token ${SRC_ACCESS_TOKEN}"
+          }
+        },
+        "linear": {
+          "command": "npx",
+          "args": ["mcp-remote", "https://mcp.linear.app/sse"]
+        }
+      }
+    },
+    "permissions": {
+      "key": "amp.permissions",
+      "type": "array",
+      "description": "Tool permission rules",
+      "actions": ["allow", "ask", "reject", "delegate"],
+      "example": [
+        {
+          "tool": "Bash",
+          "matches": {"cmd": "*git commit*"},
+          "action": "ask"
+        },
+        {
+          "tool": "Bash",
+          "matches": {"cmd": ["*python *", "*python3 *"]},
+          "action": "reject"
+        },
+        {
+          "tool": "mcp__playwright_*",
+          "action": "allow"
+        },
+        {
+          "tool": "mcp__*",
+          "action": "ask"
+        },
+        {
+          "tool": "*",
+          "action": "delegate",
+          "to": "my-permission-helper"
+        }
+      ]
+    },
+    "mcpPermissions": {
+      "key": "amp.mcpPermissions",
+      "type": "array",
+      "description": "Permissions for MCP server connections",
+      "example": [
+        {
+          "matches": {"command": "npx", "args": "* @playwright/mcp@*"},
+          "action": "allow"
+        },
+        {
+          "matches": {"url": "https://mcp.trusted.com/mcp"},
+          "action": "allow"
+        },
+        {
+          "matches": {"command": "*"},
+          "action": "reject"
+        }
+      ]
+    }
+  },
+
+  "cliCommands": {
+    "basic": {
+      "amp": "Start interactive mode",
+      "amp <prompt>": "Execute with initial prompt",
+      "amp -x <prompt>": "Execute and exit (non-interactive)"
+    },
+    "threads": {
+      "amp threads continue": "Continue last thread",
+      "amp threads list": "List all threads"
+    },
+    "skills": {
+      "amp skill add <repo/skill>": "Install skill from GitHub",
+      "amp skill add <repo>": "Install all skills from repository",
+      "amp skill list": "List installed skills",
+      "amp skill remove <name>": "Remove a skill"
+    },
+    "mcp": {
+      "amp mcp add <name> <url>": "Add MCP server",
+      "amp mcp add <name> --header 'Auth=token' <url>": "Add with auth header",
+      "amp mcp oauth login <server>": "OAuth login to MCP server"
+    },
+    "permissions": {
+      "amp permissions edit": "Edit permission rules",
+      "amp permissions list": "List current permissions",
+      "amp permission test <tool> --cmd '<cmd>'": "Test permission for command"
+    }
+  },
+
+  "cliFlags": {
+    "--execute": {
+      "alias": "-x",
+      "description": "Execute and exit (non-interactive mode)"
+    },
+    "--stream-json": {
+      "description": "Output JSON stream for programmatic use"
+    },
+    "--stream-json-input": {
+      "description": "Accept JSON stream input"
+    },
+    "--dangerously-allow-all": {
+      "description": "Skip all permission prompts"
+    },
+    "--mcp-config": {
+      "description": "Inline MCP server configuration as JSON"
+    }
+  },
+
+  "agentsmdSpecification": {
+    "format": "Standard Markdown",
+    "requiredFields": "None (completely freeform)",
+    "recommendedSections": [
+      "## Setup commands",
+      "## Code style",
+      "## Testing instructions",
+      "## PR instructions",
+      "## Security considerations"
+    ],
+    "granularGuidance": {
+      "description": "YAML frontmatter with globs for file-specific rules",
+      "example": {
+        "frontmatter": "---\nglobs:\n  - '**/*.ts'\n  - '**/*.tsx'\n---",
+        "content": "TypeScript conventions to follow..."
+      }
+    },
+    "atMentionSyntax": {
+      "@./relative/path": "Include file relative to AGENTS.md",
+      "@/absolute/path": "Include file at absolute path",
+      "@~/home/path": "Include file relative to home",
+      "@doc/*.md": "Include files matching glob pattern"
+    },
+    "codeBlockIgnore": "@-mentions in code blocks are ignored to avoid false positives"
+  },
+
+  "skillsSpecification": {
+    "file": "SKILL.md",
+    "location": {
+      "global": "~/.config/amp/skills/<skill-name>/SKILL.md",
+      "project": ".agents/skills/<skill-name>/SKILL.md"
+    },
+    "frontmatter": {
+      "name": {
+        "required": false,
+        "description": "Defaults to directory name if not specified"
+      },
+      "description": {
+        "required": true,
+        "description": "Trigger phrase for semantic matching"
+      }
+    },
+    "structure": {
+      "scripts/": "Optional directory for executable scripts",
+      "templates/": "Optional directory for template files",
+      "resources/": "Optional directory for reference materials"
+    },
+    "installCommands": {
+      "fromGitHub": "amp skill add ampcode/amp-contrib/tmux",
+      "allFromRepo": "amp skill add ampcode/amp-contrib",
+      "withCustomName": "amp skill add ampcode/amp-contrib/tmux --name my-tmux",
+      "overwrite": "amp skill add ampcode/amp-contrib/tmux --overwrite"
+    }
+  },
+
+  "toolbox": {
+    "description": "Custom tool definitions via TOOLBOX_ACTION",
+    "actions": ["describe", "execute"],
+    "environmentVariable": "TOOLBOX_ACTION",
+    "inputFormat": "Key-value pairs via stdin",
+    "outputFormat": {
+      "describe": "name: <name>\ndescription: <desc>\n<param>: <type>"
+    }
+  },
+
+  "permissionDelegation": {
+    "description": "Delegate permission decisions to external scripts",
+    "exitCodes": {
+      "0": "Allow",
+      "1": "Ask for approval",
+      "2": "Reject (stderr passed to model)"
+    },
+    "environmentVariables": {
+      "AGENT_TOOL_NAME": "Name of tool being invoked",
+      "stdin": "JSON object with tool arguments"
+    }
+  },
+
+  "threadSharing": {
+    "feature": "Sync threads to ampcode.com",
+    "url": "https://ampcode.com/threads/<thread-id>",
+    "purpose": "Share interactions with team members"
+  },
+
+  "mcpSupport": {
+    "native": true,
+    "description": "Amp speaks MCP - full Model Context Protocol support",
+    "serverTypes": {
+      "stdio": {
+        "command": "Executable command",
+        "args": "Array of arguments"
+      },
+      "http": {
+        "url": "HTTP endpoint URL",
+        "headers": "Authentication headers"
+      },
+      "sse": {
+        "url": "Server-Sent Events endpoint"
+      }
+    },
+    "oauthSupport": {
+      "command": "amp mcp oauth login",
+      "parameters": ["--server-url", "--client-id", "--client-secret", "--scopes"]
+    }
+  },
+
+  "environmentVariables": {
+    "AMP_API_KEY": {
+      "description": "API access token for headless/SDK mode"
+    },
+    "HTTP_PROXY": {
+      "description": "HTTP proxy URL"
+    },
+    "HTTPS_PROXY": {
+      "description": "HTTPS proxy URL"
+    },
+    "NODE_EXTRA_CA_CERTS": {
+      "description": "Path to custom CA certificates"
+    },
+    "SRC_ENDPOINT": {
+      "description": "Sourcegraph instance URL (for Sourcegraph MCP)"
+    },
+    "SRC_ACCESS_TOKEN": {
+      "description": "Sourcegraph access token"
+    }
+  },
+
+  "securityAndGovernance": {
+    "executionPolicy": {
+      "default": "Configurable via settings.json",
+      "options": ["allow", "ask", "reject", "delegate"]
+    },
+    "secretDetection": {
+      "feature": "Built-in secret redaction",
+      "enterprise": "Zero Data Retention option"
+    },
+    "compliance": {
+      "soc2": true,
+      "auditLogs": "Available for enterprise plans"
+    },
+    "networkAccessControl": {
+      "governed": "Source Policy",
+      "parallelSearch": "Integrated real-time web search"
+    }
+  },
+
+  "slashCommands": {
+    "/agent-files": "Show agent files currently in use",
+    "/model": "Switch model for current thread"
+  },
+
+  "keyboardShortcuts": {
+    "submitMessage": "Cmd/Ctrl+Enter",
+    "openCommandPalette": "Ctrl+O"
+  },
+
+  "bestPractices": {
+    "prompting": [
+      "Be explicit with what you want",
+      "Keep it short and focused",
+      "Break large tasks into smaller sub-tasks",
+      "Don't try to make the model guess - provide context",
+      "Say 'Only plan, do NOT write code' for planning-only",
+      "Tell the agent how to review its work",
+      "Abandon threads with too much noise",
+      "Use AGENTS.md for build/test commands"
+    ],
+    "agentsMd": [
+      "Include build commands and test instructions",
+      "Document architecture and internal APIs",
+      "Keep top-level AGENTS.md general",
+      "Create subtree AGENTS.md for subprojects",
+      "@-mention related documentation files"
+    ],
+    "contextManagement": [
+      "First prompt sets the direction - be deliberate",
+      "Start new threads for unrelated tasks",
+      "Use thread sharing to learn from team"
+    ]
+  },
+
+  "modelAgnosticism": {
+    "philosophy": "Swap models based on cost, latency, or performance benchmarks",
+    "default": "Gemini 3 Pro (as of Jan 2026)",
+    "oracle": "GPT-5.2 for complex reasoning",
+    "legacy": "Claude Sonnet 4.5 still supported"
+  }
+}

@@ -129,6 +129,11 @@ cd everything-claude-code
 # ./install.sh typescript python golang
 # or target cursor:
 # ./install.sh --target cursor typescript
+# or install for Amp CLI & VS Code Extension:
+# ./install.sh --target amp
+# ./install.sh --target amp typescript python  # specific languages
+# or install Codex CLI + VS Code extension integration:
+# ./install.sh --target codex
 ```
 
 For manual install instructions see the README in the `rules/` folder.
@@ -790,6 +795,75 @@ npm install ecc-universal
 | Hooks | No equivalent in Cursor | See alternatives |
 
 See [.cursor/README.md](.cursor/README.md) for details and [.cursor/MIGRATION.md](.cursor/MIGRATION.md) for the full migration guide.
+
+---
+
+## Codex CLI + VS Code Extension Support
+
+ECC includes an installer target for OpenAI Codex:
+
+```bash
+./install.sh --target codex
+```
+
+This target automates:
+- Installing all ECC skills to `~/.agents/skills/`
+- Converting ECC agents into skill format (`SKILL.md`) for Codex
+- Copying ECC reference assets to `~/.agents/ecc/` (`agents`, `commands`, `contexts`, `hooks`, `mcp-configs`, `rules`, `scripts`)
+- Creating/updating global `~/.agents/AGENTS.md`
+- Updating `~/.codex/config.toml`:
+  - `model_instructions_file = "~/.agents/AGENTS.md"`
+  - `project_doc_fallback_filenames = ["AGENTS.md", "CLAUDE.md"]`
+- Setting VS Code extension path in `~/.config/Code/User/settings.json`:
+  - `"chatgpt.codexCliPath": "<path-to-codex-binary>"`
+
+---
+
+## ⚡ Amp Support
+
+ECC provides full support for [Amp](https://ampcode.com) (CLI and VS Code Extension).
+
+### Quick Start (Amp)
+
+```bash
+# Clone the repo
+git clone https://github.com/affaan-m/everything-claude-code.git
+cd everything-claude-code
+
+# Install for all languages
+./install.sh --target amp
+
+# Or pick specific languages
+./install.sh --target amp typescript python
+```
+
+### What Gets Installed
+
+| Component | Count | Location |
+|-----------|-------|----------|
+| Rules | 29 files (common + 4 languages) | `~/.claude/rules/` |
+| Skills | 50 domain skills | `~/.config/amp/skills/` |
+| Agents | 13 (as `ecc-agent-*` skills) | `~/.config/amp/skills/` |
+| Commands | 33 (as `ecc-cmd-*` skills) | `~/.config/amp/skills/` |
+| AGENTS.md | Global context | `~/.config/amp/AGENTS.md` |
+| MCP Servers | 3 defaults (memory, sequential-thinking, context7) | `~/.config/amp/settings.json` |
+| Skills path | Fallback to ECC repo | `~/.config/amp/settings.json` |
+
+### Usage in Amp
+
+All ECC features are available as skills. Use the `skill` tool to load them:
+
+- **Agents:** `ecc-agent-planner`, `ecc-agent-code-reviewer`, `ecc-agent-architect`, etc.
+- **Commands:** `ecc-cmd-tdd`, `ecc-cmd-plan`, `ecc-cmd-build-fix`, `ecc-cmd-verify`, etc.
+- **Domain skills:** `coding-standards`, `backend-patterns`, `tdd-workflow`, `security-review`, etc.
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `AMP_SKILLS_DIR` | `~/.config/amp/skills` | Skills install directory |
+| `AMP_SETTINGS_FILE` | `~/.config/amp/settings.json` | Amp settings file |
+| `AMP_AGENTS_FILE` | `~/.config/amp/AGENTS.md` | Global AGENTS.md |
 
 ---
 

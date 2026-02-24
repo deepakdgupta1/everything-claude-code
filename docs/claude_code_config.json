@@ -1,0 +1,555 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claude-code-configuration-v2.0",
+  "title": "Claude Code Configuration & Attribute Specification",
+  "version": "2.0-beta",
+  "lastUpdated": "2026-01-20",
+  
+  "identity": {
+    "agentName": "Claude Code",
+    "vendor": "Anthropic",
+    "releaseChannel": "Beta / Research Preview (v2.0)",
+    "formFactor": "CLI Tool (Terminal-based)",
+    "licenseModel": "Proprietary (Requires Claude Subscription)",
+    "costArchitecture": "Usage-based (Tokens); Requires Pro, Team, or Enterprise subscription",
+    "installation": {
+      "methods": [
+        "curl -fsSL https://claude.ai/install.sh | bash",
+        "brew install --cask claude-code",
+        "npm install -g @anthropic/claude-code"
+      ]
+    }
+  },
+
+  "configurationFiles": {
+    "instructions": {
+      "file": "CLAUDE.md",
+      "description": "Agent-readable documentation with rules, commands, and architectural patterns",
+      "locations": {
+        "global": "~/.claude/CLAUDE.md",
+        "project": "./CLAUDE.md",
+        "projectAlternate": "./.claude/CLAUDE.md",
+        "local": "CLAUDE.local.md"
+      },
+      "precedence": "Global loaded first, then merged with project-specific",
+      "bestPractice": "Keep concise and token-efficient, include build commands, code style, and testing instructions"
+    },
+    "settings": {
+      "file": "settings.json",
+      "locations": {
+        "user": "~/.claude/settings.json",
+        "project": ".claude/settings.json",
+        "local": ".claude/settings.local.json",
+        "managed": {
+          "macos": "/Library/Application Support/ClaudeCode/",
+          "linux": "/etc/claude-code/",
+          "windows": "C:\\Program Files\\ClaudeCode\\"
+        }
+      },
+      "precedence": ["managed-settings", "command-line", "local-project", "shared-project", "user"]
+    },
+    "mcpConfig": {
+      "user": "~/.claude.json",
+      "project": ".mcp.json",
+      "description": "MCP server configurations"
+    },
+    "subagents": {
+      "user": "~/.claude/agents/",
+      "project": ".claude/agents/",
+      "format": "Markdown files defining specialized agent personas"
+    }
+  },
+
+  "cognitiveArchitecture": {
+    "defaultModel": {
+      "key": "model",
+      "value": "claude-sonnet-4-5-20250929",
+      "description": "Default foundation model",
+      "configLocation": "settings.json or --model flag"
+    },
+    "modelAliases": {
+      "default": {
+        "value": "default",
+        "description": "Recommended model depending on account type"
+      },
+      "sonnet": {
+        "value": "sonnet",
+        "description": "Latest Sonnet model (currently Sonnet 4.5) for daily coding tasks"
+      },
+      "opus": {
+        "value": "opus",
+        "description": "Opus 4.5 for specialized complex reasoning tasks"
+      },
+      "haiku": {
+        "value": "haiku",
+        "description": "Fast and efficient Haiku for simple tasks"
+      },
+      "sonnet1m": {
+        "value": "sonnet[1m]",
+        "description": "Sonnet with 1 million token context window"
+      },
+      "opusplan": {
+        "value": "opusplan",
+        "description": "Hybrid: Opus for planning, Sonnet for execution",
+        "bestPractice": "Recommended for complex multi-step tasks"
+      }
+    },
+    "contextWindow": {
+      "default": "200k tokens",
+      "extended": "1M tokens (with [1m] suffix)",
+      "note": "Extended context has different pricing"
+    },
+    "planningMode": {
+      "adaptive": true,
+      "planModeExplicit": "Available via opusplan alias",
+      "fastMode": "Available for simple tasks"
+    },
+    "thinkingMode": {
+      "key": "alwaysThinkingEnabled",
+      "default": false,
+      "description": "Enable extended thinking by default for all sessions"
+    }
+  },
+
+  "settings": {
+    "general": {
+      "cleanupPeriodDays": {
+        "key": "cleanupPeriodDays",
+        "default": 30,
+        "type": "number",
+        "description": "Sessions inactive for longer than this period are deleted at startup. Setting to 0 immediately deletes all sessions."
+      },
+      "language": {
+        "key": "language",
+        "default": null,
+        "type": "string",
+        "example": "japanese",
+        "description": "Configure Claude's preferred response language"
+      },
+      "autoUpdatesChannel": {
+        "key": "autoUpdatesChannel",
+        "default": "latest",
+        "options": ["stable", "latest"],
+        "description": "Release channel for updates. 'stable' is typically one week old and skips versions with major regressions"
+      },
+      "showTurnDuration": {
+        "key": "showTurnDuration",
+        "default": true,
+        "type": "boolean",
+        "description": "Show turn duration messages after responses"
+      },
+      "spinnerTipsEnabled": {
+        "key": "spinnerTipsEnabled",
+        "default": true,
+        "type": "boolean",
+        "description": "Show tips in the spinner while Claude is working"
+      },
+      "terminalProgressBarEnabled": {
+        "key": "terminalProgressBarEnabled",
+        "default": true,
+        "type": "boolean",
+        "description": "Enable terminal progress bar in supported terminals"
+      },
+      "plansDirectory": {
+        "key": "plansDirectory",
+        "default": "~/.claude/plans",
+        "type": "string",
+        "description": "Where plan files are stored, relative to project root"
+      }
+    },
+    "permissions": {
+      "allow": {
+        "key": "permissions.allow",
+        "default": [],
+        "type": "array",
+        "examples": ["Read(*)", "Search(*)", "Edit(*)", "Write(*)", "Bash(*)"],
+        "description": "Tools/commands to always allow"
+      },
+      "deny": {
+        "key": "permissions.deny",
+        "default": [],
+        "type": "array",
+        "description": "Tools/commands to always deny"
+      }
+    },
+    "sandbox": {
+      "enabled": {
+        "key": "sandbox.enabled",
+        "default": false,
+        "type": "boolean",
+        "description": "Enable bash sandboxing (macOS/Linux only)"
+      },
+      "autoAllowBashIfSandboxed": {
+        "key": "sandbox.autoAllowBashIfSandboxed",
+        "default": true,
+        "type": "boolean",
+        "description": "Auto-approve bash commands when sandboxed"
+      },
+      "excludedCommands": {
+        "key": "sandbox.excludedCommands",
+        "default": [],
+        "type": "array",
+        "example": ["git", "docker"],
+        "description": "Commands that should run outside of the sandbox"
+      },
+      "allowUnsandboxedCommands": {
+        "key": "sandbox.allowUnsandboxedCommands",
+        "default": true,
+        "type": "boolean",
+        "description": "Allow commands to run outside the sandbox via dangerouslyDisableSandbox parameter"
+      },
+      "network": {
+        "allowUnixSockets": {
+          "key": "sandbox.network.allowUnixSockets",
+          "default": [],
+          "type": "array",
+          "example": ["~/.ssh/agent-socket"],
+          "description": "Unix socket paths accessible in sandbox"
+        },
+        "allowLocalBinding": {
+          "key": "sandbox.network.allowLocalBinding",
+          "default": false,
+          "type": "boolean",
+          "description": "Allow binding to localhost ports (macOS only)"
+        },
+        "httpProxyPort": {
+          "key": "sandbox.network.httpProxyPort",
+          "default": null,
+          "type": "number",
+          "description": "HTTP proxy port for custom proxy"
+        },
+        "socksProxyPort": {
+          "key": "sandbox.network.socksProxyPort",
+          "default": null,
+          "type": "number",
+          "description": "SOCKS5 proxy port for custom proxy"
+        }
+      }
+    },
+    "enterprise": {
+      "apiKeyHelper": {
+        "key": "apiKeyHelper",
+        "type": "string",
+        "description": "Custom script to generate auth value, executed in /bin/sh"
+      },
+      "companyAnnouncements": {
+        "key": "companyAnnouncements",
+        "type": "array",
+        "description": "Announcements to display to users at startup"
+      },
+      "env": {
+        "key": "env",
+        "type": "object",
+        "description": "Environment variables applied to every session"
+      },
+      "allowManagedHooksOnly": {
+        "key": "allowManagedHooksOnly",
+        "default": false,
+        "type": "boolean",
+        "description": "Prevent loading of user, project, and plugin hooks (managed settings only)"
+      },
+      "statusLine": {
+        "key": "statusLine",
+        "type": "object",
+        "description": "Configure custom status line to display context"
+      }
+    }
+  },
+
+  "environmentVariables": {
+    "authentication": {
+      "ANTHROPIC_API_KEY": {
+        "description": "API key sent as X-Api-Key header",
+        "required": true,
+        "alternative": "Use /login for interactive usage"
+      },
+      "ANTHROPIC_AUTH_TOKEN": {
+        "description": "Custom value for Authorization header (prefixed with Bearer)"
+      },
+      "ANTHROPIC_CUSTOM_HEADERS": {
+        "description": "Custom headers in 'Name: Value' format"
+      }
+    },
+    "modelConfiguration": {
+      "ANTHROPIC_MODEL": {
+        "description": "Override the default model"
+      },
+      "ANTHROPIC_DEFAULT_OPUS_MODEL": {
+        "description": "Model to use for opus alias or opusplan in Plan Mode"
+      },
+      "ANTHROPIC_DEFAULT_SONNET_MODEL": {
+        "description": "Model to use for sonnet alias or opusplan execution"
+      },
+      "ANTHROPIC_DEFAULT_HAIKU_MODEL": {
+        "description": "Model to use for haiku alias or background functionality"
+      },
+      "CLAUDE_CODE_SUBAGENT_MODEL": {
+        "description": "Model to use for subagents"
+      }
+    },
+    "behaviorControl": {
+      "BASH_MAX_OUTPUT_LENGTH": {
+        "description": "Maximum characters in bash outputs before middle-truncation"
+      },
+      "BASH_MAX_TIMEOUT_MS": {
+        "description": "Maximum timeout for long-running bash commands"
+      },
+      "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": {
+        "description": "Percentage (1-100) at which auto-compaction triggers",
+        "default": 95
+      },
+      "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": {
+        "description": "Return to original working directory after each Bash command"
+      },
+      "CLAUDE_CODE_MAX_OUTPUT_TOKENS": {
+        "description": "Maximum output tokens for most requests",
+        "default": 32000,
+        "maximum": 64000
+      },
+      "CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS": {
+        "description": "Override default token limit for file reads"
+      },
+      "CLAUDE_CODE_SHELL": {
+        "description": "Override automatic shell detection"
+      },
+      "CLAUDE_CODE_SHELL_PREFIX": {
+        "description": "Command prefix to wrap all bash commands"
+      }
+    },
+    "cloudProviders": {
+      "CLAUDE_CODE_USE_BEDROCK": {
+        "description": "Use Amazon Bedrock"
+      },
+      "CLAUDE_CODE_USE_VERTEX": {
+        "description": "Use Google Vertex AI"
+      },
+      "CLAUDE_CODE_USE_FOUNDRY": {
+        "description": "Use Microsoft Foundry"
+      },
+      "CLAUDE_CODE_SKIP_BEDROCK_AUTH": {
+        "description": "Skip AWS authentication for Bedrock"
+      },
+      "CLAUDE_CODE_SKIP_VERTEX_AUTH": {
+        "description": "Skip Google authentication for Vertex"
+      },
+      "CLAUDE_CODE_SKIP_FOUNDRY_AUTH": {
+        "description": "Skip Azure authentication for Foundry"
+      }
+    },
+    "telemetryAndPrivacy": {
+      "DISABLE_TELEMETRY": {
+        "description": "Set to 1 to disable telemetry"
+      },
+      "DISABLE_ERROR_REPORTING": {
+        "description": "Set to 1 to disable error reporting"
+      },
+      "DISABLE_AUTOUPDATER": {
+        "description": "Set to 1 to disable automatic updates"
+      },
+      "DISABLE_BUG_COMMAND": {
+        "description": "Set to 1 to disable /bug command"
+      },
+      "DISABLE_COST_WARNINGS": {
+        "description": "Set to 1 to disable cost warning messages"
+      },
+      "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": {
+        "description": "Equivalent to setting all disable flags above"
+      },
+      "CLAUDE_CODE_HIDE_ACCOUNT_INFO": {
+        "description": "Set to 1 to hide email/org from UI (for streaming/recording)"
+      }
+    },
+    "promptCaching": {
+      "DISABLE_PROMPT_CACHING": {
+        "description": "Set to 1 to disable all prompt caching"
+      },
+      "DISABLE_PROMPT_CACHING_HAIKU": {
+        "description": "Set to 1 to disable caching for Haiku only"
+      },
+      "DISABLE_PROMPT_CACHING_SONNET": {
+        "description": "Set to 1 to disable caching for Sonnet only"
+      },
+      "DISABLE_PROMPT_CACHING_OPUS": {
+        "description": "Set to 1 to disable caching for Opus only"
+      }
+    }
+  },
+
+  "cliFlags": {
+    "execution": {
+      "--print": {
+        "alias": "-p",
+        "description": "Print response without interactive mode (SDK mode)"
+      },
+      "--continue": {
+        "alias": "-c",
+        "description": "Continue most recent conversation"
+      },
+      "--resume": {
+        "alias": "-r",
+        "parameters": "<session-id>",
+        "description": "Resume session by ID or name"
+      }
+    },
+    "configuration": {
+      "--model": {
+        "description": "Use specific Claude model"
+      },
+      "--add-dir": {
+        "description": "Add additional working directories"
+      },
+      "--agent": {
+        "description": "Specify an agent for the current session"
+      },
+      "--agents": {
+        "description": "Define custom subagents dynamically via JSON"
+      },
+      "--mcp-config": {
+        "description": "Load MCP servers from JSON files or strings"
+      },
+      "--settings": {
+        "description": "Path to additional settings JSON file"
+      }
+    },
+    "permissions": {
+      "--allowedTools": {
+        "description": "Allow specific tools without prompting",
+        "example": ["Write", "Bash(git *)"]
+      },
+      "--disallowedTools": {
+        "description": "Block specific tools"
+      },
+      "--dangerously-skip-permissions": {
+        "description": "Bypass all permission prompts (use with caution)"
+      },
+      "--permission-mode": {
+        "options": ["default", "plan", "bypassable"],
+        "description": "Set permission mode for session"
+      }
+    },
+    "output": {
+      "--output-format": {
+        "options": ["text", "json", "stream-json"],
+        "description": "Specify output format for print mode"
+      },
+      "--input-format": {
+        "options": ["text", "stream-json"],
+        "description": "Specify input format for print mode"
+      },
+      "--verbose": {
+        "description": "Enable verbose logging"
+      },
+      "--max-turns": {
+        "description": "Limit conversation turns"
+      }
+    },
+    "costControl": {
+      "--max-budget-usd": {
+        "description": "Hard cap on spend per session"
+      },
+      "--max-turns": {
+        "description": "Limit on agent loop iterations"
+      }
+    },
+    "systemPrompt": {
+      "--append-system-prompt": {
+        "description": "Append text to system prompt"
+      }
+    }
+  },
+
+  "slashCommands": {
+    "built-in": [
+      "/help",
+      "/config",
+      "/allowed-tools",
+      "/hooks",
+      "/mcp",
+      "/agents",
+      "/vim",
+      "/terminal-setup",
+      "/install-github-app",
+      "/model",
+      "/status",
+      "/bug",
+      "/init",
+      "/login"
+    ],
+    "custom": {
+      "location": ".claude/commands/",
+      "globalLocation": "~/.claude/commands/",
+      "format": "Markdown with $ARGUMENTS keyword for parameters"
+    }
+  },
+
+  "skills": {
+    "location": {
+      "project": ".claude/skills/",
+      "global": "~/.claude/skills/"
+    },
+    "format": "SKILL.md with YAML frontmatter",
+    "fields": {
+      "name": "Unique skill identifier",
+      "description": "Trigger phrase for semantic matching"
+    }
+  },
+
+  "hooks": {
+    "types": ["PreToolUse", "PostToolUse", "SessionStart", "SessionEnd"],
+    "location": "settings.json",
+    "description": "Custom scripts triggered at specific lifecycle events"
+  },
+
+  "mcpSupport": {
+    "native": true,
+    "configFile": ".mcp.json",
+    "description": "Model Context Protocol for external integrations",
+    "commands": {
+      "add": "claude mcp add <server-name> <url>",
+      "list": "claude mcp list",
+      "remove": "claude mcp remove <server-name>"
+    }
+  },
+
+  "securityAndGovernance": {
+    "executionPolicy": {
+      "default": "Interactive Permission (users must approve tool use)",
+      "bypass": "--dangerously-skip-permissions"
+    },
+    "respectGitignore": {
+      "key": "respectGitignore",
+      "default": true,
+      "description": "Respect .gitignore patterns"
+    },
+    "secretDetection": {
+      "description": "Built-in scrubbing of API keys/secrets/PII from prompts"
+    },
+    "telemetry": {
+      "default": "Enabled",
+      "disableEnvVar": "DISABLE_TELEMETRY=1"
+    }
+  },
+
+  "bestPractices": {
+    "CLAUDE.md": [
+      "Keep concise and human-readable",
+      "Include common bash commands",
+      "Document core files and utility functions",
+      "Add code style guidelines",
+      "Include testing instructions",
+      "Document repository etiquette",
+      "Use /init to auto-generate initial file"
+    ],
+    "permissions": [
+      "Always review changes before accepting",
+      "Use .claude/settings.local.json for personal settings",
+      "Configure tool permissions appropriate for your environment",
+      "Keep sensitive data in .env files with denied access"
+    ],
+    "performance": [
+      "Use # key to add notes to CLAUDE.md during coding",
+      "Select 'Always allow' for frequently used safe tools",
+      "Install gh CLI for GitHub integration"
+    ]
+  }
+}

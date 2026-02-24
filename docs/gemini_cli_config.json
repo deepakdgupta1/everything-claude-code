@@ -1,0 +1,467 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "gemini-cli-configuration-v1.0",
+    "title": "Gemini CLI Configuration & Attribute Specification",
+    "version": "1.0-GA",
+    "lastUpdated": "2026-01-25",
+    "identity": {
+        "agentName": "Gemini CLI",
+        "vendor": "Google (google-gemini)",
+        "releaseChannel": "General Availability (Stable, Preview, Nightly available)",
+        "formFactor": "CLI Tool (Terminal-based Agent)",
+        "licenseModel": "Apache 2.0 (Open Source)",
+        "repository": "https://github.com/google-gemini/gemini-cli",
+        "costArchitecture": {
+            "freeTier": "60 requests/min, 1,000 requests/day with personal Google account",
+            "paidTiers": [
+                "Google AI Pro",
+                "Google AI Ultra",
+                "Google Developer Program Premium"
+            ]
+        },
+        "installation": {
+            "npx": "npx @google/gemini-cli",
+            "npm": "npm install -g @google/gemini-cli",
+            "homebrew": "brew install gemini-cli",
+            "cloudShell": "Pre-installed in Google Cloud Shell",
+            "anaconda": "Create Anaconda environment, then npm install globally"
+        }
+    },
+    "configurationFiles": {
+        "instructions": {
+            "file": "GEMINI.md",
+            "description": "Agent-readable documentation with project context, rules, and instructions",
+            "locations": {
+                "global": "~/.gemini/GEMINI.md",
+                "project": "./GEMINI.md",
+                "projectAlternate": "./.gemini/GEMINI.md"
+            },
+            "precedence": "Global loaded first, then merged with project-specific",
+            "alternativeSupport": "AGENTS.md (vendor-neutral standard)",
+            "bestPractice": "Keep concise and token-efficient, include build commands, code style, and testing instructions"
+        },
+        "settings": {
+            "file": "settings.json",
+            "format": "JSON",
+            "locations": {
+                "systemDefaults": {
+                    "linux": "/etc/gemini-cli/system-defaults.json",
+                    "macos": "/Library/Application Support/GeminiCli/system-defaults.json",
+                    "windows": "C:\\ProgramData\\gemini-cli\\system-defaults.json"
+                },
+                "user": "~/.gemini/settings.json",
+                "project": ".gemini/settings.json",
+                "systemOverride": {
+                    "linux": "/etc/gemini-cli/settings.json",
+                    "macos": "/Library/Application Support/GeminiCli/settings.json",
+                    "windows": "C:\\ProgramData\\gemini-cli\\settings.json",
+                    "description": "Enterprise enforcement - takes precedence over all other settings"
+                }
+            },
+            "precedence": [
+                "system-defaults",
+                "user",
+                "project",
+                "system-override"
+            ],
+            "note": "Environment variables can be referenced within string values"
+        },
+        "policies": {
+            "location": "~/.gemini/policies/",
+            "format": "TOML",
+            "file": "*.toml",
+            "description": "Fine-grained execution policy rules"
+        },
+        "sandbox": {
+            "customProfiles": {
+                "macos": ".gemini/sandbox-macos-custom.sb",
+                "docker": ".gemini/sandbox.Dockerfile"
+            }
+        }
+    },
+    "cognitiveArchitecture": {
+        "defaultModel": {
+            "value": "Gemini 3 Pro",
+            "description": "Google's most advanced and intelligent flagship model"
+        },
+        "supportedModels": {
+            "google": [
+                "Gemini 3 Pro",
+                "Gemini 3 Flash",
+                "Gemini 2.5 Pro"
+            ]
+        },
+        "reasoningEffort": {
+            "default": "High",
+            "configKey": "thinkingLevel",
+            "description": "Incorporates internal 'thinking process' for enhanced reasoning"
+        },
+        "contextWindow": {
+            "input": "1 Million tokens",
+            "output": "65,536 tokens"
+        },
+        "planningMode": {
+            "pattern": "ReAct (Reason and Act)",
+            "description": "Plans, executes tools, observes results, iterates"
+        },
+        "selfCorrection": {
+            "enabled": true,
+            "capabilities": [
+                "Iterative debugging",
+                "Test execution",
+                "Linter feedback",
+                "Retry failed operations"
+            ]
+        },
+        "orchestrationPattern": "Single-threaded ReAct loop with conversation checkpointing"
+    },
+    "settings": {
+        "tools": {
+            "sandbox": {
+                "key": "tools.sandbox",
+                "type": "boolean",
+                "default": false,
+                "description": "Enable sandboxed execution for tool operations"
+            }
+        },
+        "security": {
+            "disableYoloMode": {
+                "key": "security.disableYoloMode",
+                "type": "boolean",
+                "default": false,
+                "description": "Prevent accidental YOLO mode usage"
+            },
+            "enablePermanentToolApproval": {
+                "key": "security.enablePermanentToolApproval",
+                "type": "boolean",
+                "default": false,
+                "description": "Remember tool approval decisions permanently"
+            },
+            "blockGitExtensions": {
+                "key": "security.blockGitExtensions",
+                "type": "boolean",
+                "default": false,
+                "description": "Prevent extensions from Git repositories"
+            },
+            "folderTrust": {
+                "enabled": {
+                    "key": "security.folderTrust.enabled",
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable per-folder trust policies"
+                }
+            },
+            "environmentVariableRedaction": {
+                "enabled": {
+                    "key": "security.environmentVariableRedaction.enabled",
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Redact environment variables that might contain secrets"
+                }
+            }
+        },
+        "mcpServers": {
+            "keyPattern": "mcpServers.<id>.*",
+            "description": "MCP server configurations",
+            "transports": {
+                "stdio": {
+                    "command": "Executable command",
+                    "args": "Array of arguments"
+                },
+                "sse": {
+                    "url": "Server-Sent Events endpoint"
+                },
+                "http": {
+                    "url": "HTTP streaming endpoint"
+                }
+            },
+            "example": {
+                "github": {
+                    "command": "npx",
+                    "args": [
+                        "-y",
+                        "@modelcontextprotocol/server-github"
+                    ]
+                },
+                "kubernetes": {
+                    "url": "https://mcp.example.com/k8s/sse"
+                }
+            }
+        }
+    },
+    "cliCommands": {
+        "basic": {
+            "gemini": "Start interactive mode",
+            "gemini <prompt>": "Execute with initial prompt",
+            "gemini --help": "Show help and available options"
+        },
+        "settings": {
+            "/settings": "View and edit settings interactively"
+        }
+    },
+    "cliFlags": {
+        "execution": {
+            "--sandbox": {
+                "alias": "-s",
+                "type": "boolean",
+                "description": "Enable sandboxed execution"
+            },
+            "--yolo": {
+                "alias": "--approval-mode=yolo",
+                "description": "Skip confirmations (auto-enables sandboxing)"
+            }
+        },
+        "configuration": {
+            "--model": {
+                "alias": "-m",
+                "type": "string",
+                "description": "Override the default model"
+            }
+        }
+    },
+    "sandbox": {
+        "enabled": {
+            "default": false,
+            "description": "Sandboxing is disabled by default but can be enabled"
+        },
+        "enableMethods": {
+            "flag": "--sandbox or -s command-line flag",
+            "envVar": "GEMINI_SANDBOX environment variable (true, 'docker', or 'podman')",
+            "settings": "settings.json: {\"tools\": {\"sandbox\": true}}",
+            "yoloMode": "Automatically enabled when using --yolo or --approval-mode=yolo"
+        },
+        "platforms": {
+            "docker": "Docker container isolation",
+            "podman": "Podman container isolation",
+            "macos": "Custom sandbox profiles via .gemini/sandbox-macos-custom.sb"
+        },
+        "customProfiles": {
+            "location": ".gemini/",
+            "files": [
+                "sandbox-macos-custom.sb",
+                "sandbox.Dockerfile"
+            ]
+        },
+        "capabilities": [
+            "Isolation",
+            "Limited file system access",
+            "Consistent execution environment"
+        ]
+    },
+    "executionPolicy": {
+        "policyEngine": {
+            "description": "Fine-grained control over tool execution via TOML rules",
+            "location": "~/.gemini/policies/*.toml",
+            "decisions": [
+                "allow",
+                "deny",
+                "ask_user"
+            ]
+        },
+        "defaultBehavior": {
+            "readOnlyTools": "Generally allowed without confirmation",
+            "writeOperations": "Require user confirmation",
+            "shellCommands": "Require user confirmation"
+        },
+        "trustedFolders": {
+            "configKey": "security.folderTrust.enabled",
+            "description": "Per-folder execution policy control"
+        },
+        "humanInTheLoop": {
+            "default": true,
+            "description": "User confirmation required for sensitive operations",
+            "options": [
+                "Allow once",
+                "Always allow",
+                "Deny"
+            ]
+        }
+    },
+    "tooling": {
+        "builtIn": {
+            "googleSearchGrounding": {
+                "description": "Ground prompts with Google Search for real-time external context",
+                "enabled": true
+            },
+            "fileOperations": {
+                "description": "Read/write access to project files",
+                "enabled": true
+            },
+            "shellCommands": {
+                "description": "Execute shell commands in terminal",
+                "enabled": true,
+                "requiresApproval": true
+            },
+            "webFetching": {
+                "description": "Retrieve and process content from web pages",
+                "enabled": true
+            }
+        },
+        "mcp": {
+            "native": true,
+            "description": "Model Context Protocol support for custom integrations",
+            "transports": [
+                "Stdio",
+                "SSE (Server-Sent Events)",
+                "Streamable HTTP"
+            ],
+            "authentication": "OAuth 2.0 for remote MCP servers",
+            "configLocation": "~/.gemini/settings.json"
+        },
+        "githubIntegration": {
+            "action": "google-github-actions/run-gemini-cli",
+            "capabilities": [
+                "Automated PR reviews",
+                "Issue triage and labeling",
+                "On-demand assistance via @gemini-cli mentions",
+                "Custom CI/CD workflows"
+            ]
+        }
+    },
+    "contextAndMemory": {
+        "geminiMd": {
+            "file": "GEMINI.md",
+            "purpose": "Project-specific context and instructions",
+            "hierarchical": true,
+            "description": "Global and project files are merged"
+        },
+        "agentsMd": {
+            "supported": true,
+            "description": "Vendor-neutral AGENTS.md standard also supported"
+        },
+        "conversationCheckpointing": {
+            "enabled": true,
+            "description": "Save and resume complex sessions",
+            "benefits": [
+                "Long-running agent sessions",
+                "State preservation",
+                "Token caching"
+            ]
+        },
+        "gitignore": {
+            "respected": true,
+            "description": "Respects .gitignore patterns by default"
+        }
+    },
+    "environmentVariables": {
+        "sandbox": {
+            "GEMINI_SANDBOX": {
+                "description": "Enable sandboxing",
+                "values": [
+                    "true",
+                    "docker",
+                    "podman"
+                ]
+            }
+        },
+        "authentication": {
+            "GEMINI_API_KEY": {
+                "description": "API key for authentication (alternative to OAuth)"
+            }
+        }
+    },
+    "authenticationOptions": {
+        "oauth": {
+            "method": "Login with Google (OAuth)",
+            "description": "Opens browser for Google account authentication"
+        },
+        "apiKey": {
+            "method": "Gemini API Key",
+            "source": "Google AI Studio",
+            "envVar": "GEMINI_API_KEY"
+        },
+        "vertexAI": {
+            "method": "Vertex AI",
+            "description": "For enterprise use cases with Google Cloud"
+        }
+    },
+    "securityAndGovernance": {
+        "multiLayerSecurity": {
+            "layers": [
+                "Deterministic tools with risk metadata",
+                "Risk assessment (safe, reversible, destructive)",
+                "Policy enforcement via TOML rules",
+                "Human-in-the-loop confirmation",
+                "Optional sandboxing"
+            ]
+        },
+        "executionPolicy": {
+            "default": "Human-in-the-Loop (ask for confirmation)",
+            "bypass": "--yolo flag (requires sandboxing)"
+        },
+        "secretDetection": {
+            "envRedaction": true,
+            "configKey": "security.environmentVariableRedaction.enabled"
+        },
+        "enterpriseControl": {
+            "systemOverride": "/etc/gemini-cli/settings.json",
+            "description": "Organization-wide policies that cannot be overridden by users"
+        },
+        "auditTrails": {
+            "enabled": true,
+            "description": "All proposed actions logged for compliance"
+        },
+        "telemetry": {
+            "configurable": true,
+            "description": "Usage data collected for product improvement"
+        }
+    },
+    "slashCommands": {
+        "/settings": "View and edit settings interactively",
+        "/help": "Show available commands and options"
+    },
+    "keyFeatures": {
+        "codeUnderstanding": [
+            "Query and edit large codebases",
+            "Generate apps from PDFs, images, or sketches (multimodal)",
+            "Debug and troubleshoot with natural language"
+        ],
+        "automationAndIntegration": [
+            "Automate operational tasks (PR querying, complex rebases)",
+            "Connect MCP servers for extended capabilities",
+            "Non-interactive script execution"
+        ],
+        "advancedCapabilities": [
+            "Google Search grounding for real-time information",
+            "Conversation checkpointing",
+            "Custom context files (GEMINI.md)"
+        ],
+        "githubIntegration": [
+            "PR reviews with contextual feedback",
+            "Issue triage and prioritization",
+            "On-demand @gemini-cli mentions",
+            "Custom automated workflows"
+        ]
+    },
+    "bestPractices": {
+        "geminiMd": [
+            "Keep concise and token-efficient",
+            "Include common bash commands and build instructions",
+            "Document code style guidelines",
+            "Add testing instructions",
+            "Use hierarchical structure (global + project)"
+        ],
+        "security": [
+            "Enable sandboxing for untrusted operations",
+            "Use policy engine for fine-grained control",
+            "Rely on human-in-the-loop for sensitive actions",
+            "Configure trusted folders appropriately"
+        ],
+        "performance": [
+            "Use conversation checkpointing for long sessions",
+            "Leverage Google Search grounding for real-time data",
+            "Connect relevant MCP servers for extended capabilities"
+        ],
+        "enterprise": [
+            "Deploy system override settings for organization-wide policies",
+            "Use Vertex AI authentication for enterprise environments",
+            "Configure audit trails and telemetry as required"
+        ]
+    },
+    "comparativePositioning": {
+        "vsAntigravity": "CLI-first vs IDE-based; same Gemini 3 Pro model and GEMINI.md standard",
+        "vsClaudeCode": "Similar Unix philosophy; different model (Gemini vs Claude); GEMINI.md vs CLAUDE.md",
+        "vsCodex": "Both open-source (Apache 2.0); different default sandboxing (opt-in vs strict default)",
+        "vsAmp": "CLI-only vs hybrid; same model (Gemini 3 Pro); GEMINI.md vs AGENTS.md"
+    }
+}

@@ -1,0 +1,547 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "kilo-code-configuration-v1.0",
+  "title": "Kilo Code Configuration & Attribute Specification",
+  "version": "1.0",
+  "lastUpdated": "2026-02-24",
+
+  "identity": {
+    "agentName": "Kilo Code",
+    "vendor": "Kilo Code",
+    "releaseChannel": "Active multi-platform release (CLI 1.0 line + IDE extensions)",
+    "formFactor": "VS Code extension, JetBrains plugin, CLI, and collaboration clients",
+    "repository": "https://github.com/Kilo-Org/kilocode",
+    "documentation": "https://kilo.ai/docs",
+    "installation": {
+      "vscodeExtensionId": "kilocode.kilo-code",
+      "vscodeCliInstall": "code --install-extension kilocode.kilo-code",
+      "cliNpmInstall": "npm install -g @kilocode/cli",
+      "cliVerify": "kilo --version",
+      "jetbrains": "Install from JetBrains Marketplace",
+      "openVsx": "Install from Open VSX for compatible editors",
+      "vsix": "Manual VSIX install is supported"
+    }
+  },
+
+  "platformSupport": {
+    "ide": [
+      "VS Code",
+      "JetBrains IDEs",
+      "VS Code-compatible editors (Open VSX / VSIX paths)"
+    ],
+    "cli": "kilo",
+    "collaboration": ["Slack"],
+    "additionalClients": ["Cloud Agent", "Mobile"]
+  },
+
+  "configurationFiles": {
+    "cliCoreConfig": {
+      "format": "JSON / JSONC",
+      "global": "~/.config/kilo/opencode.json or ~/.config/kilo/opencode.jsonc",
+      "project": "./opencode.json or ./.opencode/",
+      "precedence": "Project overrides global",
+      "note": "Windows uses the platform config directory with the same filenames"
+    },
+    "configSchema": {
+      "url": "https://app.kilo.ai/config.json",
+      "description": "Published runtime schema for CLI config validation"
+    },
+    "mcpConfig": {
+      "extensionGlobal": "~/.kilocode/cli/global/settings/mcp_settings.json",
+      "project": ".kilocode/mcp.json",
+      "precedence": "Project-level MCP servers override global servers with the same name"
+    },
+    "rules": {
+      "project": ".kilocode/rules/",
+      "global": "~/.kilocode/rules/",
+      "legacyFallback": [".roorules", ".clinerules", ".kilocoderules"],
+      "bestPractice": "Use folder-based rules in .kilocode/rules/ instead of legacy single files"
+    },
+    "modeSpecificRules": {
+      "generalModeRules": ".kilocode/rules-{mode}/",
+      "legacyModeRules": ".kilocoderules-{mode}",
+      "customModeRulesPreferred": ".kilo/rules-{mode-slug}/",
+      "customModeRulesFallback": ".kilorules-{mode-slug}",
+      "globalCustomModeRules": "~/.kilo/rules-{slug}/",
+      "projectCustomModeRules": "{workspace}/.kilo/rules-{slug}/"
+    },
+    "customModes": {
+      "globalFiles": ["custom_modes.yaml (preferred)", "custom_modes.json (legacy-compatible)"],
+      "projectFile": ".kilocodemodes",
+      "precedence": [
+        "Project .kilocodemodes",
+        "Global custom_modes.yaml",
+        "Global custom_modes.json",
+        "Built-in defaults"
+      ]
+    },
+    "skills": {
+      "global": "~/.kilocode/skills/",
+      "project": ".kilocode/skills/",
+      "globalModeSpecific": "~/.kilocode/skills-{mode-slug}/",
+      "projectModeSpecific": ".kilocode/skills-{mode-slug}/",
+      "requiredFile": "SKILL.md",
+      "precedence": [
+        "Project skill over global skill when names match",
+        "Mode-specific skill over generic skill when names match"
+      ]
+    },
+    "workflows": {
+      "global": "~/.kilocode/workflows/",
+      "project": ".kilocode/workflows/",
+      "trigger": "/[workflow-file-name.md]"
+    },
+    "agentsMd": {
+      "projectRoot": "AGENTS.md",
+      "alternateFilenames": [".github/agents.md", "agents.md"],
+      "subdirectorySupport": true,
+      "precedence": "Subdirectory AGENTS.md overrides root AGENTS.md for matching scope",
+      "disableSetting": "kilocode.useAgentRules = false",
+      "protection": "AGENTS.md is write-protected by default in Kilo Code"
+    },
+    "contextExclusions": {
+      "file": ".kilocodeignore",
+      "description": "Project-level ignore patterns for indexing, search, and file listing",
+      "relationshipToGitignore": "Independent from .gitignore; both may be used together"
+    }
+  },
+
+  "cognitiveArchitecture": {
+    "modeSystem": {
+      "builtInModes": [
+        "Code (default)",
+        "Ask",
+        "Architect",
+        "Debug",
+        "Orchestrator",
+        "Review"
+      ],
+      "switchingMethods": [
+        "Mode dropdown in UI",
+        "Slash commands (including /newtask and /smol in mode workflows)",
+        "Keyboard mode cycling shortcut",
+        "Agent mode-switch suggestions"
+      ],
+      "stickyModelBehavior": "Each mode remembers the last model used and reselects it when the mode is re-entered"
+    },
+    "orchestrationPattern": {
+      "orchestratorMode": "Delegates subtasks to specialized modes",
+      "delegationTool": "new_task",
+      "customModeSelectionSignal": "whenToUse field can guide automated routing"
+    },
+    "agentConfigModel": {
+      "source": "agent field in config schema",
+      "builtInAgentKeys": ["plan", "build", "general", "explore", "title", "summary", "compaction"],
+      "agentFields": [
+        "model",
+        "variant",
+        "temperature",
+        "top_p",
+        "prompt",
+        "description",
+        "mode",
+        "hidden",
+        "options",
+        "color",
+        "steps",
+        "permission"
+      ],
+      "agentModeEnum": ["subagent", "primary", "all"]
+    }
+  },
+
+  "settings": {
+    "schemaReference": "https://app.kilo.ai/config.json",
+    "topLevelConfigKeys": {
+      "$schema": "Schema URI for config validation",
+      "theme": "Interface theme",
+      "keybinds": "Keymap overrides including leader key and action bindings",
+      "logLevel": "Logging level: DEBUG, INFO, WARN, ERROR",
+      "tui": "Terminal UI settings such as scroll and diff style",
+      "server": "Serve/web host settings (hostname, port, CORS, mDNS)",
+      "command": "Reusable command templates",
+      "skills": "Additional skill folder paths and URLs",
+      "watcher": "File watcher ignore controls",
+      "plugin": "Plugin registry entries",
+      "snapshot": "Session snapshot behavior",
+      "share": "manual, auto, or disabled sharing policy",
+      "autoshare": "Deprecated; use share",
+      "autoupdate": "Update behavior: boolean or notify",
+      "disabled_providers": "Disable automatically loaded providers",
+      "enabled_providers": "Allowlist-only providers when set",
+      "model": "Primary model in provider/model format",
+      "small_model": "Lightweight model for helper tasks",
+      "default_agent": "Default primary agent",
+      "username": "Display name override in chat",
+      "mode": "Deprecated mode map; use agent",
+      "agent": "Agent definitions and overrides",
+      "provider": "Provider definitions, options, and model metadata",
+      "mcp": "MCP server definitions",
+      "formatter": "Formatter integrations (or false)",
+      "lsp": "Language server integrations (or false)",
+      "instructions": "Additional instruction files and globs",
+      "layout": "Deprecated layout setting",
+      "permission": "Tool permission policy",
+      "tools": "Tool-level enable/disable switches",
+      "enterprise": "Enterprise endpoint and policy settings",
+      "compaction": "Conversation compaction behavior",
+      "experimental": "Feature flags and advanced toggles"
+    },
+    "selectedDefaultsAndEnums": {
+      "share": {
+        "options": ["manual", "auto", "disabled"]
+      },
+      "permissionAction": {
+        "options": ["ask", "allow", "deny"]
+      },
+      "autoupdate": {
+        "options": ["true", "false", "notify"]
+      },
+      "layout": {
+        "options": ["auto", "stretch"],
+        "status": "Deprecated"
+      },
+      "logLevel": {
+        "options": ["DEBUG", "INFO", "WARN", "ERROR"]
+      }
+    },
+    "agentModeFields": {
+      "slug": "Mode identifier",
+      "name": "UI display name",
+      "description": "Short purpose summary",
+      "roleDefinition": "Primary behavior/persona instructions",
+      "groups": "Tool groups and optional fileRegex restrictions",
+      "whenToUse": "Routing hint for mode selection",
+      "customInstructions": "Additional mode instructions"
+    },
+    "keybindSystem": {
+      "leaderDefault": "ctrl+x",
+      "supports": [
+        "session controls",
+        "message navigation",
+        "model switching",
+        "agent switching",
+        "input editing",
+        "clipboard actions"
+      ],
+      "examples": {
+        "openEditor": "<leader>e",
+        "listThemes": "<leader>t",
+        "newSession": "<leader>n",
+        "listSessions": "<leader>l",
+        "interruptSession": "escape"
+      }
+    },
+    "tuiAndExperimental": {
+      "tuiFields": ["scroll_speed", "scroll_acceleration", "diff_style"],
+      "experimentalFields": [
+        "disable_paste_summary",
+        "batch_tool",
+        "openTelemetry",
+        "primary_tools",
+        "continue_loop_on_deny",
+        "mcp_timeout"
+      ]
+    }
+  },
+
+  "permissionsModel": {
+    "actions": {
+      "allow": "Run automatically",
+      "ask": "Prompt for approval",
+      "deny": "Block execution"
+    },
+    "supportedToolKeys": [
+      "read",
+      "edit",
+      "glob",
+      "grep",
+      "list",
+      "bash",
+      "task",
+      "external_directory",
+      "todowrite",
+      "todoread",
+      "question",
+      "webfetch",
+      "websearch",
+      "codesearch",
+      "lsp",
+      "doom_loop",
+      "skill",
+      "*"
+    ],
+    "patternSemantics": {
+      "wildcards": {
+        "*": "Matches zero or more characters",
+        "?": "Matches exactly one character"
+      },
+      "evaluationOrder": "Last matching rule wins",
+      "homeExpansion": "Patterns may start with ~ or $HOME"
+    },
+    "shapeOptions": {
+      "globalString": {
+        "example": {
+          "permission": "allow"
+        }
+      },
+      "perToolStringOrObject": {
+        "example": {
+          "permission": {
+            "*": "ask",
+            "bash": {
+              "*": "ask",
+              "git *": "allow",
+              "rm *": "deny"
+            },
+            "edit": {
+              "*": "deny",
+              "packages/web/src/content/docs/*.mdx": "allow"
+            }
+          }
+        }
+      }
+    }
+  },
+
+  "mcpSupport": {
+    "native": true,
+    "configScopes": {
+      "global": "~/.kilocode/cli/global/settings/mcp_settings.json",
+      "project": ".kilocode/mcp.json"
+    },
+    "transportTypes": {
+      "stdio": {
+        "useCase": "Local process servers",
+        "typicalFields": ["command", "args", "env", "alwaysAllow", "disabled"]
+      },
+      "streamableHttp": {
+        "useCase": "Remote HTTP/HTTPS servers",
+        "typicalFields": ["type", "url", "headers", "alwaysAllow", "disabled"]
+      },
+      "sse": {
+        "status": "Deprecated in MCP spec (2025-03-26)",
+        "replacement": "Streamable HTTP"
+      }
+    },
+    "schemaModel": {
+      "localRef": "McpLocalConfig",
+      "remoteRef": "McpRemoteConfig",
+      "oauthRef": "McpOAuthConfig",
+      "localTypeConst": "local",
+      "remoteTypeConst": "remote",
+      "localRequired": ["type", "command"],
+      "remoteRequired": ["type", "url"]
+    },
+    "timeouts": {
+      "extensionUiDefault": "1 minute (configurable from 30 seconds to 5 minutes)",
+      "cliSchemaField": "timeout (milliseconds; schema examples default to 5000 when unspecified)"
+    },
+    "autoApproval": {
+      "perTool": "alwaysAllow list per MCP server entry",
+      "globalGate": "Use MCP servers auto-approval setting must be enabled",
+      "envOverride": "KILO_AUTO_APPROVAL_MCP_ENABLED=true"
+    }
+  },
+
+  "cliCommands": {
+    "topLevel": {
+      "kilo run [message..]": "Start interactive or autonomous execution",
+      "kilo mcp": "Manage MCP-related behavior"
+    },
+    "executionModes": {
+      "interactiveDefault": true,
+      "autonomousFlag": "--auto",
+      "autonomousBehavior": [
+        "No interactive approvals",
+        "Uses config-driven allow/deny decisions",
+        "Follow-up questions receive autonomous-decision guidance",
+        "Process exits automatically on completion or timeout"
+      ],
+      "sessionContinuation": {
+        "flags": ["--continue", "-c"],
+        "constraints": [
+          "Cannot be combined with --auto",
+          "Cannot be combined with a new prompt argument",
+          "Requires a prior session in the current workspace"
+        ]
+      },
+      "exitCodes": {
+        "0": "Success",
+        "124": "Timeout",
+        "1": "Initialization or execution error"
+      }
+    }
+  },
+
+  "cliFlags": {
+    "--auto": "Autonomous non-interactive execution",
+    "--continue": "Resume latest workspace session",
+    "-c": "Short alias for --continue",
+    "--help": "Show CLI help",
+    "--version": "Show installed CLI version",
+    "--log-level": "Set log verbosity",
+    "--print-logs": "Print logs to output"
+  },
+
+  "slashCommands": {
+    "session": [
+      "/new",
+      "/continue",
+      "/resume",
+      "/sessions",
+      "/history",
+      "/timeline",
+      "/timestamps",
+      "/toggle-timestamps",
+      "/fork",
+      "/rename",
+      "/share",
+      "/unshare",
+      "/export",
+      "/copy",
+      "/clear"
+    ],
+    "agentAndModel": [
+      "/agents",
+      "/models",
+      "/status",
+      "/thinking",
+      "/toggle-thinking",
+      "/compact",
+      "/summarize"
+    ],
+    "mcpAndIntegrations": ["/mcps", "/connect"],
+    "organizationAndProfile": ["/orgs", "/org", "/teams", "/team", "/profile", "/whoami", "/me"],
+    "systemAndNavigation": [
+      "/help",
+      "/themes",
+      "/editor",
+      "/docs",
+      "/tasks",
+      "/t",
+      "/undo",
+      "/redo",
+      "/q",
+      "/quit",
+      "/exit"
+    ],
+    "localReview": ["/local-review", "/local-review-uncommitted"]
+  },
+
+  "environmentVariables": {
+    "providerSelection": {
+      "KILO_PROVIDER": "Override active provider ID"
+    },
+    "providerFieldOverrides": {
+      "KILOCODE_<FIELD_NAME>": "Override fields for kilocode provider (example: KILOCODE_MODEL)",
+      "KILO_<FIELD_NAME>": "Override fields for other providers (example: KILO_API_KEY)"
+    },
+    "configInterpolation": {
+      "syntax": "{env:VARIABLE_NAME}",
+      "example": "{env:OPENAI_API_KEY}"
+    },
+    "mcpAutoApproval": {
+      "KILO_AUTO_APPROVAL_MCP_ENABLED": "Enable MCP auto-approval globally in CLI environments"
+    }
+  },
+
+  "interoperability": {
+    "opencodeCompatibility": {
+      "status": "Kilo CLI 1.0 is OpenCode-compatible for configuration",
+      "documentation": "https://opencode.ai/docs/config",
+      "sharedConcepts": [
+        "provider/model selection",
+        "permissions",
+        "formatter",
+        "LSP integrations",
+        "MCP server config"
+      ]
+    },
+    "agentsStandard": {
+      "file": "AGENTS.md",
+      "crossToolUsage": "Compatible with multiple coding-agent tools that support AGENTS.md"
+    }
+  },
+
+  "securityAndGovernance": {
+    "approvalAndExecution": {
+      "policyModel": "Per-tool and per-pattern allow/ask/deny",
+      "recommendedDefault": "ask for unknown or risky actions",
+      "externalDirectoryControl": "Explicit external_directory rules gate paths outside workspace"
+    },
+    "sensitiveDataHandling": {
+      "settingsExport": "Exported settings JSON can contain API provider profiles and secrets",
+      "guidance": "Treat exported settings as sensitive and do not share publicly"
+    },
+    "mcpRiskControls": {
+      "noBundledServersByDefault": true,
+      "perToolAutoApprovalDefault": "disabled",
+      "globalMcpAutoApprovalGate": true,
+      "timeoutControls": "Per-server timeout is configurable"
+    },
+    "instructionIntegrity": {
+      "agentsMdProtected": true,
+      "rulesVersionControl": "Project rules under .kilocode can be committed for team consistency"
+    },
+    "resetBehavior": {
+      "resetSettingsClears": [
+        "API configurations",
+        "stored secrets",
+        "custom modes",
+        "global settings",
+        "task history"
+      ]
+    }
+  },
+
+  "bestPractices": {
+    "rules": [
+      "Keep rule files modular under .kilocode/rules/ with descriptive filenames",
+      "Prefer folder-based rules over legacy single-file fallbacks",
+      "Use mode-specific rules only where constraints genuinely differ"
+    ],
+    "modes": [
+      "Prefer YAML for custom mode definitions",
+      "Use strict groups/fileRegex constraints for sensitive workflows",
+      "Use project-level mode overrides for repo-specific behavior"
+    ],
+    "skills": [
+      "Ensure SKILL.md frontmatter name matches its parent directory",
+      "Write concrete descriptions to improve deterministic skill triggering",
+      "Store reusable scripts/templates in skill subfolders and reference them from instructions"
+    ],
+    "permissions": [
+      "Start with ask, then selectively allow safe repetitive patterns",
+      "Place broad wildcard rules before specific exceptions",
+      "Use deny rules for destructive command patterns"
+    ],
+    "mcp": [
+      "Prefer Streamable HTTP over deprecated SSE transport",
+      "Keep auto-approval scoped to only the MCP tools you trust",
+      "Commit project .kilocode/mcp.json when teams need shared tooling"
+    ],
+    "operations": [
+      "Use --auto only in controlled CI/CD or scripted environments",
+      "Use --continue to preserve workspace context between sessions",
+      "Protect and encrypt any exported settings artifacts"
+    ]
+  },
+
+  "references": {
+    "docsHome": "https://kilo.ai/docs",
+    "installing": "https://kilo.ai/docs/getting-started/installing",
+    "cli": "https://kilo.ai/docs/code-with-ai/platforms/cli",
+    "settings": "https://kilo.ai/docs/getting-started/settings",
+    "customRules": "https://kilo.ai/docs/customize/custom-rules",
+    "customModes": "https://kilo.ai/docs/customize/custom-modes",
+    "customInstructions": "https://kilo.ai/docs/customize/custom-instructions",
+    "skills": "https://kilo.ai/docs/customize/skills",
+    "workflows": "https://kilo.ai/docs/customize/workflows",
+    "agentsMd": "https://kilo.ai/docs/customize/agents-md",
+    "mcpInCli": "https://kilo.ai/docs/automate/mcp/using-in-cli",
+    "mcpInKiloCode": "https://kilo.ai/docs/automate/mcp/using-in-kilo-code",
+    "runtimeConfigSchema": "https://app.kilo.ai/config.json",
+    "opencodeConfigReference": "https://opencode.ai/docs/config"
+  }
+}

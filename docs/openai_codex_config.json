@@ -1,0 +1,697 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openai-codex-configuration-v0.87",
+  "title": "OpenAI Codex CLI Configuration & Attribute Specification",
+  "version": "0.87.0",
+  "lastUpdated": "2026-01-20",
+
+  "identity": {
+    "agentName": "Codex CLI",
+    "vendor": "OpenAI",
+    "releaseChannel": "Public Beta (v0.87.0)",
+    "formFactor": "CLI / TUI (Terminal User Interface)",
+    "licenseModel": "Apache 2.0 (Open Source Harness)",
+    "costArchitecture": "Requires ChatGPT Plus/Team/Enterprise subscription",
+    "repository": "https://github.com/openai/codex",
+    "installation": {
+      "npm": "npm i -g @openai/codex",
+      "homebrew": "brew install openai-codex",
+      "upgrade": "npm i -g @openai/codex@latest"
+    }
+  },
+
+  "configurationFiles": {
+    "userConfig": {
+      "file": "config.toml",
+      "location": "~/.codex/config.toml",
+      "format": "TOML",
+      "description": "User-level configuration"
+    },
+    "requirements": {
+      "file": "requirements.toml",
+      "locations": {
+        "linuxMacos": "/etc/codex/requirements.toml",
+        "macosMdm": "preference domain com.openai.codex, key requirements_toml_base64"
+      },
+      "description": "Admin-enforced constraints that users cannot override"
+    },
+    "managedConfig": {
+      "file": "managed_config.toml",
+      "locations": {
+        "linuxMacos": "/etc/codex/managed_config.toml",
+        "windows": "~/.codex/managed_config.toml"
+      },
+      "description": "Managed defaults that override user config"
+    },
+    "instructions": {
+      "file": "AGENTS.md",
+      "description": "Agent guidance file (adopted standard)",
+      "alternativeKey": "experimental_instructions_file in config.toml"
+    },
+    "skills": {
+      "file": "SKILL.md",
+      "location": "Skills folder referenced in config.toml",
+      "configKey": "skills.config"
+    }
+  },
+
+  "cognitiveArchitecture": {
+    "defaultModel": {
+      "key": "model",
+      "value": "gpt-5.2-codex",
+      "description": "Optimized for agentic coding with improved vision and cybersecurity capabilities"
+    },
+    "supportedModels": [
+      "gpt-5.2-codex",
+      "codex-mini-latest",
+      "gpt-5.1-codex-max"
+    ],
+    "modelProvider": {
+      "key": "model_provider",
+      "default": "openai",
+      "description": "Provider ID from model_providers configuration"
+    },
+    "reasoningEffort": {
+      "key": "model_reasoning_effort",
+      "options": ["minimal", "low", "medium", "high", "xhigh"],
+      "default": "medium",
+      "description": "Controls chain-of-thought density"
+    },
+    "reasoningSummary": {
+      "key": "model_reasoning_summary",
+      "options": ["auto", "concise", "detailed"],
+      "description": "Format of reasoning summaries when enabled"
+    },
+    "contextWindow": {
+      "key": "model_context_window",
+      "type": "number",
+      "description": "Context window tokens available to active model",
+      "feature": "Context Compaction for long-horizon tasks"
+    },
+    "autoCompactTokenLimit": {
+      "key": "model_auto_compact_token_limit",
+      "type": "number",
+      "description": "Token threshold that triggers automatic history compaction"
+    }
+  },
+
+  "configToml": {
+    "core": {
+      "model": {
+        "type": "string",
+        "default": "gpt-5.2-codex",
+        "description": "Model to use"
+      },
+      "model_provider": {
+        "type": "string",
+        "default": "openai",
+        "description": "Provider ID from model_providers"
+      },
+      "profile": {
+        "type": "string",
+        "description": "Default profile applied at startup"
+      },
+      "developer_instructions": {
+        "type": "string",
+        "description": "Additional developer instructions injected into session"
+      },
+      "check_for_update_on_startup": {
+        "type": "boolean",
+        "default": true,
+        "description": "Check for updates on startup"
+      }
+    },
+    "approvalPolicy": {
+      "key": "approval_policy",
+      "type": "string",
+      "options": {
+        "untrusted": "Ask before running any untrusted command",
+        "on-failure": "Ask only when a command fails",
+        "on-request": "Ask only when explicitly requested",
+        "never": "Never ask for approval (dangerous)"
+      },
+      "default": "on-request",
+      "recommended": "on-request for development, untrusted for sensitive environments"
+    },
+    "sandboxMode": {
+      "key": "sandbox_mode",
+      "type": "string",
+      "options": {
+        "read-only": "Can only read files",
+        "workspace-write": "Write access only to current workspace (default)",
+        "danger-full-access": "Full access to system (not recommended)"
+      },
+      "default": "workspace-write",
+      "recommended": "workspace-write"
+    },
+    "sandboxWorkspaceWrite": {
+      "network_access": {
+        "key": "sandbox_workspace_write.network_access",
+        "type": "boolean",
+        "default": false,
+        "description": "Allow outbound network access in workspace-write mode"
+      },
+      "exclude_slash_tmp": {
+        "key": "sandbox_workspace_write.exclude_slash_tmp",
+        "type": "boolean",
+        "default": false,
+        "description": "Exclude /tmp from writable roots"
+      },
+      "exclude_tmpdir_env_var": {
+        "key": "sandbox_workspace_write.exclude_tmpdir_env_var",
+        "type": "boolean",
+        "default": false,
+        "description": "Exclude $TMPDIR from writable roots"
+      },
+      "writable_roots": {
+        "key": "sandbox_workspace_write.writable_roots",
+        "type": "array<string>",
+        "description": "Additional writable roots"
+      }
+    },
+    "features": {
+      "apply_patch_freeform": {
+        "default": false,
+        "maturity": "Experimental",
+        "description": "Expose freeform apply_patch tool"
+      },
+      "elevated_windows_sandbox": {
+        "default": false,
+        "maturity": "Experimental",
+        "description": "Use elevated Windows sandbox pipeline"
+      },
+      "exec_policy": {
+        "default": true,
+        "maturity": "Experimental",
+        "description": "Enforce rules checks for shell/unified_exec"
+      },
+      "experimental_windows_sandbox": {
+        "default": false,
+        "maturity": "Experimental",
+        "description": "Use Windows restricted-token sandbox"
+      },
+      "remote_compaction": {
+        "default": true,
+        "maturity": "Experimental",
+        "description": "Enable remote compaction (ChatGPT auth only)"
+      },
+      "remote_models": {
+        "default": false,
+        "maturity": "Experimental",
+        "description": "Refresh remote model list before showing readiness"
+      },
+      "shell_snapshot": {
+        "default": false,
+        "maturity": "Beta",
+        "description": "Snapshot shell environment to speed up repeated commands"
+      },
+      "shell_tool": {
+        "default": true,
+        "maturity": "Stable",
+        "description": "Enable default shell tool"
+      },
+      "unified_exec": {
+        "default": false,
+        "maturity": "Beta",
+        "description": "Use unified PTY-backed exec tool"
+      },
+      "undo": {
+        "default": true,
+        "maturity": "Stable",
+        "description": "Enable undo via per-turn git ghost snapshots"
+      },
+      "web_search_request": {
+        "default": false,
+        "maturity": "Stable",
+        "description": "Allow model to issue web searches"
+      }
+    },
+    "shellEnvironmentPolicy": {
+      "exclude": {
+        "key": "shell_environment_policy.exclude",
+        "type": "array<string>",
+        "description": "Glob patterns for removing environment variables"
+      },
+      "ignore_default_excludes": {
+        "key": "shell_environment_policy.ignore_default_excludes",
+        "type": "boolean",
+        "default": false,
+        "description": "Keep variables containing KEY/SECRET/TOKEN before other filters"
+      },
+      "include_only": {
+        "key": "shell_environment_policy.include_only",
+        "type": "array<string>",
+        "example": ["PATH", "HOME"],
+        "description": "Only include specified environment variables"
+      },
+      "set": {
+        "key": "shell_environment_policy.set",
+        "type": "map<string,string>",
+        "description": "Explicit environment overrides"
+      },
+      "experimental_use_profile": {
+        "key": "shell_environment_policy.experimental_use_profile",
+        "type": "boolean",
+        "description": "Use user shell profile when spawning subprocesses"
+      },
+      "inherit": {
+        "key": "shell_environment_policy.inherit",
+        "options": ["all", "core"],
+        "description": "Which environment variables to inherit"
+      }
+    },
+    "tui": {
+      "animations": {
+        "key": "tui.animations",
+        "type": "boolean",
+        "default": true,
+        "description": "Enable terminal animations"
+      },
+      "notifications": {
+        "key": "tui.notifications",
+        "type": "boolean|array<string>",
+        "description": "Enable TUI notifications"
+      },
+      "show_tooltips": {
+        "key": "tui.show_tooltips",
+        "type": "boolean",
+        "default": true,
+        "description": "Show onboarding tooltips"
+      },
+      "scroll_mode": {
+        "key": "tui.scroll_mode",
+        "options": ["auto", "wheel", "trackpad"],
+        "description": "Scroll interpretation mode"
+      },
+      "scroll_invert": {
+        "key": "tui.scroll_invert",
+        "type": "boolean",
+        "description": "Invert mouse scroll direction"
+      }
+    },
+    "history": {
+      "persistence": {
+        "key": "history.persistence",
+        "options": ["save-all", "none"],
+        "description": "Session history persistence"
+      },
+      "max_bytes": {
+        "key": "history.max_bytes",
+        "type": "number",
+        "description": "Max history file size in bytes"
+      }
+    },
+    "mcpServers": {
+      "keyPattern": "mcp_servers.<id>.*",
+      "fields": {
+        "command": {
+          "key": "mcp_servers.<id>.command",
+          "type": "string",
+          "description": "MCP stdio server command"
+        },
+        "args": {
+          "key": "mcp_servers.<id>.args",
+          "type": "array<string>",
+          "description": "Arguments for MCP server command"
+        },
+        "url": {
+          "key": "mcp_servers.<id>.url",
+          "type": "string",
+          "description": "Endpoint for MCP streamable HTTP server"
+        },
+        "env": {
+          "key": "mcp_servers.<id>.env",
+          "type": "map<string,string>",
+          "description": "Environment variables for MCP server"
+        },
+        "startup_timeout_sec": {
+          "key": "mcp_servers.<id>.startup_timeout_sec",
+          "type": "number",
+          "default": 10,
+          "description": "Startup timeout"
+        },
+        "tool_timeout_sec": {
+          "key": "mcp_servers.<id>.tool_timeout_sec",
+          "type": "number",
+          "default": 60,
+          "description": "Per-tool timeout"
+        },
+        "http_headers": {
+          "key": "mcp_servers.<id>.http_headers",
+          "type": "map<string,string>",
+          "description": "Static HTTP headers for MCP requests"
+        }
+      }
+    },
+    "modelProviders": {
+      "keyPattern": "model_providers.<id>.*",
+      "fields": {
+        "name": {
+          "key": "model_providers.<id>.name",
+          "type": "string",
+          "description": "Display name"
+        },
+        "base_url": {
+          "key": "model_providers.<id>.base_url",
+          "type": "string",
+          "description": "API base URL"
+        },
+        "env_key": {
+          "key": "model_providers.<id>.env_key",
+          "type": "string",
+          "description": "Environment variable for API key"
+        },
+        "wire_api": {
+          "key": "model_providers.<id>.wire_api",
+          "options": ["chat", "responses"],
+          "default": "chat",
+          "description": "Protocol used by provider"
+        },
+        "request_max_retries": {
+          "key": "model_providers.<id>.request_max_retries",
+          "type": "number",
+          "default": 4,
+          "description": "HTTP request retry count"
+        },
+        "stream_max_retries": {
+          "key": "model_providers.<id>.stream_max_retries",
+          "type": "number",
+          "default": 5,
+          "description": "SSE streaming retry count"
+        },
+        "stream_idle_timeout_ms": {
+          "key": "model_providers.<id>.stream_idle_timeout_ms",
+          "type": "number",
+          "default": 300000,
+          "description": "SSE stream idle timeout"
+        }
+      }
+    },
+    "skills": {
+      "config": {
+        "key": "skills.config",
+        "type": "array<object>",
+        "fields": {
+          "path": "Path to skill folder containing SKILL.md",
+          "enabled": "Enable or disable the skill"
+        }
+      }
+    },
+    "otel": {
+      "log_user_prompt": {
+        "key": "otel.log_user_prompt",
+        "type": "boolean",
+        "default": false,
+        "description": "Opt in to exporting raw prompts with OTEL logs"
+      },
+      "trace_exporter": {
+        "key": "otel.trace_exporter",
+        "options": ["none", "otlp-http"],
+        "description": "OTEL trace exporter type"
+      }
+    },
+    "authentication": {
+      "cli_auth_credentials_store": {
+        "key": "cli_auth_credentials_store",
+        "options": ["file", "keyring", "auto"],
+        "description": "Where CLI stores cached credentials"
+      },
+      "chatgpt_base_url": {
+        "key": "chatgpt_base_url",
+        "type": "string",
+        "description": "Override base URL for ChatGPT login"
+      },
+      "forced_login_method": {
+        "key": "forced_login_method",
+        "options": ["chatgpt", "api"],
+        "description": "Force a specific login method"
+      }
+    }
+  },
+
+  "requirementsToml": {
+    "description": "Admin-enforced constraints that users cannot override",
+    "location": "/etc/codex/requirements.toml",
+    "fields": {
+      "allowed_approval_policies": {
+        "type": "array<string>",
+        "description": "Allowed values for approval_policy",
+        "example": ["untrusted", "on-failure", "on-request"]
+      },
+      "allowed_sandbox_modes": {
+        "type": "array<string>",
+        "description": "Allowed values for sandbox_mode",
+        "example": ["read-only", "workspace-write"]
+      }
+    },
+    "example": {
+      "allowed_approval_policies": ["untrusted", "on-failure", "on-request"],
+      "allowed_sandbox_modes": ["read-only", "workspace-write"]
+    },
+    "note": "Blocks --ask-for-approval never and --sandbox danger-full-access"
+  },
+
+  "cliFlags": {
+    "global": {
+      "--add-dir": {
+        "type": "path",
+        "repeatable": true,
+        "description": "Grant additional directories write access"
+      },
+      "--ask-for-approval": {
+        "alias": "-a",
+        "options": ["untrusted", "on-failure", "on-request", "never"],
+        "description": "Control when Codex pauses for approval"
+      },
+      "--cd": {
+        "alias": "-C",
+        "type": "path",
+        "description": "Set working directory before processing"
+      },
+      "--config": {
+        "alias": "-c",
+        "type": "key=value",
+        "repeatable": true,
+        "description": "Override configuration values"
+      },
+      "--dangerously-bypass-approvals-and-sandbox": {
+        "alias": "--yolo",
+        "type": "boolean",
+        "description": "Run without approvals or sandboxing (dangerous)"
+      },
+      "--enable": {
+        "type": "feature",
+        "repeatable": true,
+        "description": "Force-enable a feature flag"
+      },
+      "--disable": {
+        "type": "feature",
+        "repeatable": true,
+        "description": "Force-disable a feature flag"
+      },
+      "--full-auto": {
+        "type": "boolean",
+        "description": "Shortcut: --ask-for-approval on-request --sandbox workspace-write"
+      },
+      "--image": {
+        "alias": "-i",
+        "type": "path[,path...]",
+        "description": "Attach image files to initial prompt"
+      },
+      "--model": {
+        "alias": "-m",
+        "type": "string",
+        "description": "Override model"
+      },
+      "--oss": {
+        "type": "boolean",
+        "description": "Use local open source model provider (Ollama)"
+      },
+      "--profile": {
+        "alias": "-p",
+        "type": "string",
+        "description": "Load configuration profile"
+      },
+      "--sandbox": {
+        "alias": "-s",
+        "options": ["read-only", "workspace-write", "danger-full-access"],
+        "description": "Select sandbox policy"
+      },
+      "--search": {
+        "type": "boolean",
+        "description": "Enable web search without full network access"
+      }
+    },
+    "execCommand": {
+      "--color": {
+        "options": ["always", "never", "auto"]
+      },
+      "--output-last-message": {
+        "alias": "-o",
+        "type": "path",
+        "description": "Write final message to file"
+      },
+      "--output-schema": {
+        "type": "path",
+        "description": "JSON Schema for expected response"
+      },
+      "--skip-git-repo-check": {
+        "type": "boolean",
+        "description": "Allow running outside Git repository"
+      }
+    }
+  },
+
+  "slashCommands": {
+    "/approvals": "View or change approval settings",
+    "/feedback": "Submit feedback",
+    "/review": "Request code review",
+    "/status": "Show current status and directories"
+  },
+
+  "subcommands": {
+    "codex": "Start interactive TUI",
+    "codex exec": "Non-interactive execution",
+    "codex exec resume": "Resume exec session",
+    "codex mcp": "Manage MCP servers",
+    "codex mcp add": "Add MCP server",
+    "codex mcp remove": "Remove MCP server",
+    "codex sandbox": "Test sandbox locally",
+    "codex sandbox seatbelt": "Test macOS Seatbelt sandbox",
+    "codex sandbox landlock": "Test Linux Landlock sandbox",
+    "codex config show --effective": "Show effective configuration"
+  },
+
+  "sandbox": {
+    "platforms": {
+      "macos": {
+        "mechanism": "Seatbelt policies",
+        "command": "sandbox-exec with profile",
+        "description": "Uses -p flag corresponding to sandbox mode"
+      },
+      "linux": {
+        "mechanism": "Landlock + seccomp",
+        "description": "Combination of kernel security features"
+      },
+      "windows": {
+        "mechanism": "Experimental restricted-token sandbox",
+        "recommended": "Use WSL for best experience",
+        "vscodeSetting": "\"codex.preferWsl\": true"
+      }
+    },
+    "modes": {
+      "read-only": "Can only read files, never asks for approval for reads",
+      "workspace-write": "Write access to current workspace and /tmp, no network by default",
+      "danger-full-access": "No sandbox, no approvals (not recommended)"
+    },
+    "recommendations": {
+      "versionControlled": "Auto (workspace write + on-request approvals)",
+      "nonVersionControlled": "read-only"
+    }
+  },
+
+  "networkAccess": {
+    "default": false,
+    "enableKey": "sandbox_workspace_write.network_access",
+    "cliOverride": "--sandbox workspace-write -c 'sandbox_workspace_write.network_access=true'",
+    "webSearchAlternative": "--search flag or features.web_search_request",
+    "warning": "Prompt injection can cause agent to fetch untrusted instructions"
+  },
+
+  "profiles": {
+    "description": "Named configuration sets in config.toml",
+    "usage": "codex --profile <name>",
+    "keyPattern": "profiles.<name>.*",
+    "example": {
+      "[profiles.dev]": {
+        "approval_policy": "on-request",
+        "sandbox_mode": "workspace-write"
+      },
+      "[profiles.safe]": {
+        "approval_policy": "untrusted",
+        "sandbox_mode": "read-only"
+      }
+    }
+  },
+
+  "mcpSupport": {
+    "native": true,
+    "shellToolMcp": "Included in repository",
+    "configKey": "mcp_servers",
+    "commands": {
+      "add": "codex mcp add <name> <command|url>",
+      "remove": "codex mcp remove <name>"
+    }
+  },
+
+  "securityAndGovernance": {
+    "defaultNetworkAccess": false,
+    "executionPolicy": {
+      "default": "Auto (workspace write + on-request approvals for Git repos)",
+      "managed": "Enterprise can enforce via requirements.toml"
+    },
+    "mdmSupport": {
+      "macos": {
+        "preferenceDomain": "com.openai.codex",
+        "keys": ["config_toml_base64", "requirements_toml_base64"]
+      }
+    },
+    "versionControl": {
+      "recommendation": "Work on feature branches, keep git status clean",
+      "bestPractice": "Commit frequently for easy rollback"
+    },
+    "telemetry": {
+      "default": "Off",
+      "otelSupport": true,
+      "privacyWarning": "Keep log_user_prompt = false unless policy permits"
+    }
+  },
+
+  "presetCombinations": {
+    "auto": {
+      "flags": "--full-auto or no flags",
+      "effect": "Read, edit, run commands in workspace; ask for outside workspace or network"
+    },
+    "safeReadOnly": {
+      "flags": "--sandbox read-only --ask-for-approval on-request",
+      "effect": "Read files only; ask for edits, commands, network"
+    },
+    "readOnlyCI": {
+      "flags": "--sandbox read-only --ask-for-approval never",
+      "effect": "Read only, never asks (for CI)"
+    },
+    "editAskUntrusted": {
+      "flags": "--sandbox workspace-write --ask-for-approval untrusted",
+      "effect": "Read/edit files; ask before untrusted commands"
+    },
+    "dangerFullAccess": {
+      "flags": "--dangerously-bypass-approvals-and-sandbox (--yolo)",
+      "effect": "No sandbox, no approvals",
+      "warning": "Not recommended"
+    }
+  },
+
+  "bestPractices": {
+    "security": [
+      "Prefer workspace-write with approvals for most users",
+      "Reserve full access for controlled containers",
+      "Keep network_access = false unless explicitly needed",
+      "Use managed configuration to pin OTEL settings",
+      "Keep log_user_prompt = false",
+      "Audit diffs between local and managed config"
+    ],
+    "versionControl": [
+      "Work on feature branches",
+      "Keep git status clean before delegating",
+      "Prefer patch-based workflows",
+      "Commit frequently for rollback",
+      "Treat Codex suggestions like PRs"
+    ],
+    "enterpriseDeployment": [
+      "Use requirements.toml for security constraints",
+      "Deploy managed_config.toml for defaults",
+      "Use MDM profiles on macOS",
+      "Set up OTEL for audit logging"
+    ]
+  }
+}
