@@ -19,7 +19,8 @@
     "best-practices",
     "cursor",
     "cursor-ide",
-    "opencode"
+    "opencode",
+    "antigravity-ide"
   ],
   "author": {
     "name": "Affaan Mustafa",
@@ -35,6 +36,7 @@
     "url": "https://github.com/affaan-m/everything-claude-code/issues"
   },
   "files": [
+    ".antigravity/",
     ".cursor/",
     ".opencode/commands/",
     ".opencode/instructions/",

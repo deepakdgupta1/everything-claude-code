@@ -1,0 +1,420 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "google-antigravity-configuration-v1.14",
+  "title": "Google Antigravity Configuration & Attribute Specification",
+  "version": "1.14.2-preview",
+  "lastUpdated": "2026-01-20",
+
+  "identity": {
+    "agentName": "Google Antigravity",
+    "vendor": "Google",
+    "releaseChannel": "Public Preview (v1.14.2)",
+    "formFactor": "Standalone IDE (Modified VS Code Fork)",
+    "licenseModel": "Proprietary (Free during preview for individuals)",
+    "costArchitecture": {
+      "individuals": "Free for personal Gmail accounts during preview",
+      "enterprise": "Integration via Gemini Code Assist"
+    },
+    "installation": {
+      "methods": ["System Installer (.dmg, .exe, .deb, .rpm, snap)"],
+      "downloadPage": "https://antigravity.google/download",
+      "commandLine": "agy (installed via Configure your Editor settings)"
+    }
+  },
+
+  "configurationFiles": {
+    "globalRules": {
+      "file": "GEMINI.md",
+      "location": "~/.gemini/GEMINI.md",
+      "description": "Global rules that apply to all projects",
+      "purpose": "Personal coding philosophy, language preferences, documentation standards"
+    },
+    "workspaceRules": {
+      "location": "<workspace>/.agent/rules/",
+      "format": "Markdown files",
+      "description": "Project-specific rules that override global rules"
+    },
+    "globalWorkflows": {
+      "location": "~/.gemini/antigravity/global_workflows/",
+      "file": "global-workflow.md",
+      "description": "Saved prompts available globally via / commands"
+    },
+    "workspaceWorkflows": {
+      "location": "<workspace>/.agent/workflows/",
+      "description": "Project-specific workflows triggered with /"
+    },
+    "globalSkills": {
+      "location": "~/.gemini/antigravity/skills/",
+      "file": "SKILL.md",
+      "description": "User-specific skills available across all projects"
+    },
+    "workspaceSkills": {
+      "location": "<workspace>/.agent/skills/",
+      "file": "SKILL.md",
+      "description": "Project-specific skills"
+    },
+    "browserAllowlist": {
+      "location": "~/.gemini/antigravity/browserAllowlist.txt",
+      "format": "Plain text, one domain per line",
+      "description": "Trusted domains for browser agent"
+    },
+    "mcpConfig": {
+      "location": "~/.gemini/antigravity/mcp_config.json",
+      "description": "MCP server configurations"
+    },
+    "antigravitySettings": {
+      "location": "~/.gemini/antigravity/",
+      "accessMethod": "Antigravity — Settings (Cmd + ,)"
+    }
+  },
+
+  "cognitiveArchitecture": {
+    "defaultModel": {
+      "value": "Gemini 3 Pro",
+      "contextWindow": "2 Million Tokens"
+    },
+    "supportedModels": {
+      "google": ["Gemini 3 Pro", "Gemini 3 Deep Think", "Gemini 3 Flash"],
+      "anthropic": ["Claude Sonnet 4.5", "Claude Opus 4.5"],
+      "openai": ["GPT-OSS-120B (Open-source variant)"]
+    },
+    "agentModes": {
+      "planning": {
+        "default": true,
+        "description": "Agent plans before executing tasks. Use for deep research, complex tasks, or collaborative work.",
+        "behavior": "Organizes work in task groups, produces Artifacts, thoroughly researches and plans"
+      },
+      "fast": {
+        "description": "Agent executes tasks directly. Use for simple tasks like renaming variables or running commands.",
+        "behavior": "Speed-focused, less thinking budget consumed"
+      }
+    },
+    "planningMode": "Explicit - Generates Task Lists and Implementation Plans before coding",
+    "selfCorrectionCapability": "High - Includes 'Explain and fix' and 'Send problems to agent' workflows",
+    "orchestrationPattern": "Asynchronous Agent Manager handling parallel task execution"
+  },
+
+  "settings": {
+    "terminalExecutionPolicy": {
+      "key": "Terminal Command Auto Execution",
+      "location": "Antigravity — Settings → Advanced Settings → Terminal",
+      "options": {
+        "off": {
+          "description": "Never auto-execute terminal commands except those in Allow list",
+          "securityLevel": "Most secure"
+        },
+        "auto": {
+          "description": "Agent decides whether to auto-execute based on internal safety models",
+          "default": true,
+          "behavior": "Asks permission for risky commands"
+        },
+        "turbo": {
+          "description": "Always auto-execute terminal commands except those in Deny list",
+          "warning": "High Risk - Not recommended for enterprise use"
+        }
+      }
+    },
+    "javascriptExecutionPolicy": {
+      "key": "JavaScript Execution policy",
+      "options": {
+        "alwaysProceed": {
+          "description": "Agent will not stop to ask for permission to run JavaScript in browser",
+          "warning": "Highest exposure to security exploits"
+        },
+        "requestReview": {
+          "description": "Agent will always stop to ask for permission to run JavaScript",
+          "default": true
+        },
+        "disabled": {
+          "description": "Agent will never run JavaScript code in browser"
+        }
+      }
+    },
+    "presetModes": {
+      "secureMode": {
+        "description": "Enhanced security controls restricting access to external resources",
+        "features": "Several security measures enforced to protect environment"
+      },
+      "reviewDrivenDevelopment": {
+        "description": "Agent frequently asks for review",
+        "recommended": true,
+        "note": "Good balance - agent makes decisions and returns for approval"
+      },
+      "agentDrivenDevelopment": {
+        "description": "Agent will never ask for review",
+        "warning": "Maximum autonomy"
+      },
+      "customConfiguration": {
+        "description": "Fully customizable policies"
+      }
+    },
+    "allowListTerminalCommands": {
+      "location": "Advanced Settings → Terminal → Allow List Terminal Commands",
+      "usage": "With 'Off' policy, only listed commands auto-execute",
+      "securityModel": "Positive - everything forbidden unless permitted",
+      "example": ["ls -al", "git status", "npm test"]
+    },
+    "denyListTerminalCommands": {
+      "location": "Advanced Settings → Terminal → Deny List Terminal Commands",
+      "usage": "With 'Turbo' policy, listed commands require approval",
+      "securityModel": "Negative - everything allowed unless forbidden",
+      "recommendedBlocks": ["rm", "rmdir", "sudo", "curl", "wget"]
+    },
+    "browserUrlAllowlist": {
+      "location": "Advanced Settings → Browser → Browser URL Allowlist → Open Allowlist File",
+      "file": "~/.gemini/antigravity/browserAllowlist.txt",
+      "purpose": "Prevent prompt injection from compromised sites",
+      "format": "Domain names, one per line"
+    },
+    "telemetry": {
+      "key": "Enable Telemetry",
+      "location": "Settings → Account",
+      "default": true
+    }
+  },
+
+  "rulesAndWorkflows": {
+    "rules": {
+      "purpose": "System instructions - passive, persistent guidelines always 'on'",
+      "behavior": "Agent considers these before generating any code or plan",
+      "scope": {
+        "global": "~/.gemini/GEMINI.md",
+        "workspace": "<workspace>/.agent/rules/<rule-name>.md"
+      },
+      "useCases": [
+        "Language preferences (e.g., Always use TypeScript over JavaScript)",
+        "Documentation standards (e.g., Always add docstrings)",
+        "Security guidelines (e.g., Never generate hardcoded API keys)",
+        "Code style preferences"
+      ]
+    },
+    "workflows": {
+      "purpose": "Saved prompts triggered on demand with / commands",
+      "behavior": "User-triggered, not automatic",
+      "scope": {
+        "global": "~/.gemini/antigravity/global_workflows/",
+        "workspace": "<workspace>/.agent/workflows/"
+      },
+      "triggering": "/ + workflow name",
+      "analogy": "Macros of the agentic world"
+    },
+    "precedence": "Workspace rules in .agent/rules/ override global GEMINI.md rules"
+  },
+
+  "skills": {
+    "purpose": "Agent-triggered capabilities invoked via natural language semantic matching",
+    "distinction": "Unlike slash commands - agent decides when to use based on task matching",
+    "location": {
+      "global": "~/.gemini/antigravity/skills/<skill-name>/",
+      "workspace": "<workspace>/.agent/skills/<skill-name>/"
+    },
+    "structure": {
+      "SKILL.md": "Required - Brain of the skill with metadata and instructions",
+      "scripts/": "Optional - Executable scripts for complex operations",
+      "templates/": "Optional - Template files for code generation",
+      "resources/": "Optional - Reference materials"
+    },
+    "skillMdFormat": {
+      "frontmatter": {
+        "name": {
+          "required": false,
+          "description": "Unique identifier, defaults to directory name if not provided"
+        },
+        "description": {
+          "required": true,
+          "description": "Most important field - trigger phrase for LLM semantic matching",
+          "bestPractice": "Be precise, not vague. Include specific use cases."
+        }
+      },
+      "body": {
+        "goal": "Clear statement of what skill achieves",
+        "instructions": "Step-by-step logic",
+        "examples": "Few-shot examples of inputs and outputs",
+        "constraints": "'Do not' rules"
+      }
+    },
+    "scriptIntegration": {
+      "location": "scripts/ subdirectory",
+      "referencing": "Relative path from SKILL.md",
+      "purpose": "Delegate execution for binary operations, calculations, legacy system interaction"
+    },
+    "vsRulesAndWorkflows": {
+      "rules": "Passive constraints, always on",
+      "workflows": "Active, user-triggered sequences",
+      "skills": "Agent-triggered capabilities, semantic matching"
+    }
+  },
+
+  "mcpSupport": {
+    "native": true,
+    "feature": "MCP Store for one-click installation of connectors",
+    "examples": ["BigQuery", "AlloyDB"],
+    "configLocation": "~/.gemini/antigravity/mcp_config.json",
+    "viewing": "Agent Manager → View raw config",
+    "remoteServers": {
+      "github": {
+        "example": "Remote GitHub MCP Server",
+        "oauth": "Supports OAuth flow for authentication"
+      }
+    },
+    "refreshing": "Click Refresh button in MCP panel after config changes"
+  },
+
+  "artifactGeneration": {
+    "taskLists": "Structured plans before coding",
+    "implementationPlans": "Detailed implementation steps",
+    "walkthroughs": "Post-task summaries",
+    "browserRecordings": "Video of UI validation (proof of work)",
+    "screenshots": "UI state capture",
+    "purpose": "Build trust through behavioral review (watching videos) not just code review (reading diffs)"
+  },
+
+  "interfaceComponents": {
+    "agentManager": {
+      "description": "Mission Control for managing autonomous agents",
+      "capabilities": [
+        "Dispatch multiple agents to work in parallel",
+        "View status of each agent",
+        "See produced Artifacts",
+        "Handle pending approval requests"
+      ]
+    },
+    "editor": {
+      "description": "VS Code-based editor for human verification and code editing",
+      "foundation": "Modified VS Code fork"
+    },
+    "browser": {
+      "description": "Integrated browser for opening URLs, DOM interaction, JavaScript execution"
+    },
+    "keyboardShortcuts": {
+      "openSettings": "Cmd + ,"
+    }
+  },
+
+  "hostCompatibility": {
+    "windows": "Windows 10/11 (64-bit)",
+    "macos": "macOS Monterey 12+",
+    "linux": "glibc 2.28+",
+    "wsl2": "Required for Windows sandboxing"
+  },
+
+  "sandboxing": {
+    "localSubprocess": {
+      "default": true,
+      "description": "Commands run as local subprocesses"
+    },
+    "wsl2": {
+      "required": "Windows",
+      "description": "Windows Subsystem for Linux 2 required"
+    },
+    "docker": {
+      "optIn": true,
+      "configuration": "Via template config"
+    }
+  },
+
+  "securityAndGovernance": {
+    "terminalPolicy": {
+      "default": "Auto (Agent decides when to ask)",
+      "options": ["Off (Never auto-execute)", "Auto", "Turbo (Always auto-execute - High Risk)"]
+    },
+    "browserPolicy": {
+      "default": "Request Review",
+      "options": ["Always Proceed (High Risk)", "Request Review", "Disabled"]
+    },
+    "networkAccessControl": {
+      "requirement": "Outbound to Google services required",
+      "enterprise": "Configurable firewall whitelisting"
+    },
+    "secretDetection": {
+      "method": "Integrated IAM using Google Cloud credentials",
+      "storage": "Secrets stored securely"
+    },
+    "promptInjectionProtection": {
+      "browserAllowlist": "Restrict agent to trusted domains only",
+      "purpose": "Prevent attacks from compromised documentation sites"
+    }
+  },
+
+  "gettingStarted": {
+    "setupFlow": {
+      "steps": [
+        "Choose setup flow (import from VS Code/Cursor or fresh start)",
+        "Choose editor theme",
+        "Configure agent autonomy settings",
+        "Configure editor (keybindings, extensions, command line)",
+        "Sign in to Google (personal Gmail account)",
+        "Accept Terms of Use"
+      ]
+    },
+    "openWorkspace": {
+      "method": "Agent Manager → Open folder",
+      "note": "Can skip and open workspace later"
+    }
+  },
+
+  "undoChanges": {
+    "method": "↩️ Undo changes up to this point in chat",
+    "availability": "After each step"
+  },
+
+  "customizations": {
+    "accessMethod": "Agent Manager → ... → Customizations",
+    "options": ["Rules", "Workflows"]
+  },
+
+  "modelSelection": {
+    "location": "Model Selection dropdown in Agent Manager",
+    "available": ["Gemini 3 Pro", "Gemini 3 Deep Think", "Gemini 3 Flash", "Claude Sonnet 4.5", "Claude Opus 4.5", "GPT-OSS-120B"],
+    "quotaNote": "Gemini 3 Pro has limited free quotas during preview"
+  },
+
+  "workspaceAwareness": {
+    "level": "Deep - 'Mission Control' over entire project structure",
+    "indexingStrategy": "Full-codebase indexing with Mission Control oversight"
+  },
+
+  "extensionEcosystem": {
+    "skills": "YAML/Markdown format in .agent/skills/",
+    "vscodeExtensions": "Supports standard VS Code extensions (with some limitations)"
+  },
+
+  "bestPractices": {
+    "security": [
+      "Use 'Review-driven development' preset (recommended)",
+      "Configure Allow List when using 'Off' policy",
+      "Configure Deny List to block rm, rmdir, sudo, curl, wget",
+      "Set up Browser URL Allowlist for trusted domains only",
+      "Restart Antigravity after changing allow/deny lists"
+    ],
+    "rules": [
+      "Keep global GEMINI.md for personal preferences",
+      "Use workspace .agent/rules/ for team standards",
+      "Be specific with rule instructions"
+    ],
+    "skills": [
+      "Write precise descriptions for semantic matching",
+      "Include Goal, Instructions, Examples, Constraints in SKILL.md body",
+      "Use scripts/ for complex operations",
+      "Place global skills in ~/.gemini/antigravity/skills/"
+    ],
+    "workflows": [
+      "Create reusable prompts as workflows",
+      "Share workspace workflows with team via version control"
+    ],
+    "agentUsage": [
+      "Use Planning mode for complex tasks",
+      "Use Fast mode for simple, localized tasks",
+      "Review Artifacts (task lists, recordings) before accepting",
+      "Use Undo to revert unwanted changes"
+    ]
+  },
+
+  "comparisonToOtherAgents": {
+    "paradigm": "Mission Control GUI - maximalist, agent-first approach",
+    "philosophy": "AI is primary actor, human is supervisor/architect/manager",
+    "differentiator": "Explicit Planning Mode with Task Lists and Implementation Plans before coding",
+    "artifactTrust": "Proof of work via browser recordings and screenshots",
+    "contextStandard": "GEMINI.md (proprietary) + .agent/ structure"
+  }
+}

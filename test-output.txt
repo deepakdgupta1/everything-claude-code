@@ -1,0 +1,2 @@
+// TEST RULE ACTIVE
+This is a test output file to verify workspace rules.
