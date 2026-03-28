@@ -83,7 +83,7 @@ Claude Codeセッションを終了時に自動的に評価し、学習済みス
 
 ## 比較ノート (調査: 2025年1月)
 
-### vs Homunculus (github.com/humanplane/homunculus)
+### vs Homunculus
 
 Homunculus v2はより洗練されたアプローチを採用:
 
@@ -107,4 +107,4 @@ Homunculus v2はより洗練されたアプローチを採用:
 4. **ドメインタグ付け** - コードスタイル、テスト、git、デバッグなど
 5. **進化パス** - 関連する本能をスキル/コマンドにクラスタ化
 
-詳細: `/Users/affoon/Documents/tasks/12-continuous-learning-v2.md`を参照。
+詳細: `docs/continuous-learning-v2-spec.md`を参照。
